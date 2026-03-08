@@ -1906,6 +1906,7 @@ export default function CreateWizard() {
       case 2: return <StepScript form={form} onApprove={() => setCurrentStep(3)} />;
       case 3: return <StepAudio form={form} onApprove={() => setCurrentStep(4)} />;
       case 4: return <StepThumbnail form={form} onApprove={() => setCurrentStep(5)} />;
+      case 5: return <StepVideo form={form} onApprove={() => setCurrentStep(6)} />;
       default: return <StepPlaceholder stepIndex={currentStep} />;
     }
   };
