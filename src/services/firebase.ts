@@ -38,7 +38,7 @@ export const firebaseService = {
 
     const { data, error } = await supabase
       .from('projects')
-      .insert({ ...projectData, user_id: user.id })
+      .insert([{ ...projectData, user_id: user.id } as any])
       .select()
       .single();
     if (error) throw error;
