@@ -59,10 +59,26 @@ const defaultAssets: ProjectState['assets'] = {
 export const useStore = create<ProjectState>((set, get) => ({
   currentStep: 1,
   projectData: null,
+  speakerNames: {
+    global: { female: 'Alina', male: 'Sergiu' },
+    project: { female: 'Alina', male: 'Sergiu', useCustom: false },
+  },
   assets: { ...defaultAssets },
 
   setCurrentStep: (step) => set({ currentStep: step }),
   setProjectData: (data) => set({ projectData: data }),
+  setGlobalSpeakerNames: (female, male) => set((s) => ({
+    speakerNames: { ...s.speakerNames, global: { female, male } },
+  })),
+  setProjectSpeakerNames: (female, male, useCustom) => set((s) => ({
+    speakerNames: { ...s.speakerNames, project: { female, male, useCustom } },
+  })),
+  getActiveSpeakerNames: () => {
+    const { speakerNames } = get();
+    return speakerNames.project.useCustom
+      ? { female: speakerNames.project.female, male: speakerNames.project.male }
+      : speakerNames.global;
+  },
 
   generateScript: async () => {
     set((s) => ({ assets: { ...s.assets, script: { ...s.assets.script, status: 'generating' } } }));
