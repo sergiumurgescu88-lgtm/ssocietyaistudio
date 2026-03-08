@@ -1198,6 +1198,7 @@ export default function CreateWizard() {
       case 0: return <StepPlaceholder stepIndex={0} />;
       case 1: return <StepToolInput form={form} setForm={setForm} onGenerate={() => setCurrentStep(2)} />;
       case 2: return <StepScript form={form} onApprove={() => setCurrentStep(3)} />;
+      case 3: return <StepAudio form={form} onApprove={() => setCurrentStep(4)} />;
       default: return <StepPlaceholder stepIndex={currentStep} />;
     }
   };
