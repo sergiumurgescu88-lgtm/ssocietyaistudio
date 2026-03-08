@@ -101,7 +101,7 @@ Keywords: ${(keywords || [name]).join(', ')}
 
 Răspunde DOAR cu JSON valid.`;
 
-        result = await retryWithFallback((key) => callGemini(key, 'gemini-2.5-pro-preview-06-05', prompt));
+        result = await retryWithFallback((key) => callGemini(key, 'gemini-2.0-flash', prompt));
         break;
       }
 
