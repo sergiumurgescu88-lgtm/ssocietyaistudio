@@ -716,7 +716,20 @@ const Footer = () => (
           <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> +40 768 676 141</span>
         </div>
       </div>
-      <p className="text-center text-xs text-muted-foreground mt-6">Made with ❤️ in Romania</p>
+
+      <div className="border-t border-border mt-8 pt-6 text-center space-y-2">
+        <p className="text-xs text-muted-foreground">
+          Powered by{" "}
+          <a href="https://ssociety.eu" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-foreground transition-colors font-medium">ssociety.eu</a>
+          {" "}· SSocietyHUB
+        </p>
+        <div className="text-[11px] text-muted-foreground/70 space-y-0.5">
+          <p className="font-medium text-muted-foreground/80">MURSE ADVERTISING S.R.L.</p>
+          <p>CUI: 44923890 · J40/16148/2021 · EUID: ROONRC.J40/16148/2021</p>
+          <p>Înființată: 17.09.2021</p>
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">Made with ❤️ in Romania</p>
+      </div>
     </div>
   </footer>
 );
