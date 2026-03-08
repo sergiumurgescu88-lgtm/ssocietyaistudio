@@ -10,6 +10,11 @@ interface AssetState {
   approved: boolean;
 }
 
+interface SpeakerNames {
+  female: string;
+  male: string;
+}
+
 interface ProjectState {
   currentStep: number;
   projectData: {
@@ -18,6 +23,10 @@ interface ProjectState {
     description: string;
     audience: string[];
   } | null;
+  speakerNames: {
+    global: SpeakerNames;
+    project: SpeakerNames & { useCustom: boolean };
+  };
   assets: {
     script: AssetState & { content: string };
     audio: AssetState & { url: string };
@@ -27,6 +36,9 @@ interface ProjectState {
   };
   setCurrentStep: (step: number) => void;
   setProjectData: (data: ProjectState['projectData']) => void;
+  setGlobalSpeakerNames: (female: string, male: string) => void;
+  setProjectSpeakerNames: (female: string, male: string, useCustom: boolean) => void;
+  getActiveSpeakerNames: () => SpeakerNames;
   generateScript: () => Promise<void>;
   generateAudio: (script: string) => Promise<void>;
   generateThumbnail: (prompt: string) => Promise<void>;
