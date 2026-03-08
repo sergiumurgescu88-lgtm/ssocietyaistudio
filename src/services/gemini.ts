@@ -5,6 +5,8 @@ interface ScriptParams {
   duration: number;
   description: string;
   audience: string[];
+  femaleSpeakerName?: string;
+  maleSpeakerName?: string;
 }
 
 async function invokeGemini<T>(payload: Record<string, unknown>): Promise<T> {

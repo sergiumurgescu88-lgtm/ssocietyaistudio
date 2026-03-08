@@ -20,13 +20,16 @@ export type Database = {
           created_at: string
           description: string | null
           duration: number | null
+          female_speaker_name: string | null
           id: string
           keywords: string[] | null
+          male_speaker_name: string | null
           name: string
           script: string | null
           seo_content: Json | null
           status: string
           updated_at: string
+          use_custom_speakers: boolean | null
           user_id: string
         }
         Insert: {
@@ -34,13 +37,16 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration?: number | null
+          female_speaker_name?: string | null
           id?: string
           keywords?: string[] | null
+          male_speaker_name?: string | null
           name: string
           script?: string | null
           seo_content?: Json | null
           status?: string
           updated_at?: string
+          use_custom_speakers?: boolean | null
           user_id: string
         }
         Update: {
@@ -48,12 +54,42 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration?: number | null
+          female_speaker_name?: string | null
           id?: string
           keywords?: string[] | null
+          male_speaker_name?: string | null
           name?: string
           script?: string | null
           seo_content?: Json | null
           status?: string
+          updated_at?: string
+          use_custom_speakers?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          female_speaker_name: string
+          id: string
+          male_speaker_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          female_speaker_name?: string
+          id?: string
+          male_speaker_name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          female_speaker_name?: string
+          id?: string
+          male_speaker_name?: string
           updated_at?: string
           user_id?: string
         }

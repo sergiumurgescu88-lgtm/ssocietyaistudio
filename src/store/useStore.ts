@@ -10,6 +10,11 @@ interface AssetState {
   approved: boolean;
 }
 
+interface SpeakerNames {
+  female: string;
+  male: string;
+}
+
 interface ProjectState {
   currentStep: number;
   projectData: {
@@ -18,6 +23,10 @@ interface ProjectState {
     description: string;
     audience: string[];
   } | null;
+  speakerNames: {
+    global: SpeakerNames;
+    project: SpeakerNames & { useCustom: boolean };
+  };
   assets: {
     script: AssetState & { content: string };
     audio: AssetState & { url: string };
@@ -27,6 +36,9 @@ interface ProjectState {
   };
   setCurrentStep: (step: number) => void;
   setProjectData: (data: ProjectState['projectData']) => void;
+  setGlobalSpeakerNames: (female: string, male: string) => void;
+  setProjectSpeakerNames: (female: string, male: string, useCustom: boolean) => void;
+  getActiveSpeakerNames: () => SpeakerNames;
   generateScript: () => Promise<void>;
   generateAudio: (script: string) => Promise<void>;
   generateThumbnail: (prompt: string) => Promise<void>;
@@ -47,17 +59,38 @@ const defaultAssets: ProjectState['assets'] = {
 export const useStore = create<ProjectState>((set, get) => ({
   currentStep: 1,
   projectData: null,
+  speakerNames: {
+    global: { female: 'Alina', male: 'Sergiu' },
+    project: { female: 'Alina', male: 'Sergiu', useCustom: false },
+  },
   assets: { ...defaultAssets },
 
   setCurrentStep: (step) => set({ currentStep: step }),
   setProjectData: (data) => set({ projectData: data }),
+  setGlobalSpeakerNames: (female, male) => set((s) => ({
+    speakerNames: { ...s.speakerNames, global: { female, male } },
+  })),
+  setProjectSpeakerNames: (female, male, useCustom) => set((s) => ({
+    speakerNames: { ...s.speakerNames, project: { female, male, useCustom } },
+  })),
+  getActiveSpeakerNames: () => {
+    const { speakerNames } = get();
+    return speakerNames.project.useCustom
+      ? { female: speakerNames.project.female, male: speakerNames.project.male }
+      : speakerNames.global;
+  },
 
   generateScript: async () => {
     set((s) => ({ assets: { ...s.assets, script: { ...s.assets.script, status: 'generating' } } }));
     try {
-      const { projectData } = get();
+      const { projectData, getActiveSpeakerNames } = get();
       if (!projectData) throw new Error('No project data');
-      const content = await geminiService.generateScript(projectData);
+      const speakers = getActiveSpeakerNames();
+      const content = await geminiService.generateScript({
+        ...projectData,
+        femaleSpeakerName: speakers.female,
+        maleSpeakerName: speakers.male,
+      });
       set((s) => ({ assets: { ...s.assets, script: { content, status: 'ready', approved: false } } }));
     } catch {
       set((s) => ({ assets: { ...s.assets, script: { ...s.assets.script, status: 'failed' } } }));
