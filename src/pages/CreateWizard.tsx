@@ -2486,6 +2486,303 @@ function StepReview({ form, onBack, onPublish }: { form: ToolFormData; onBack: (
 }
 
 /* ──────────────────────────────────
+   STEP 9: Publishing + Tracking
+   ────────────────────────────────── */
+
+interface PlatformPublishStatus {
+  id: string;
+  name: string;
+  emoji: string;
+  status: "pending" | "publishing" | "published" | "failed" | "scheduled";
+  scheduledTime?: string;
+  publishedUrl?: string;
+  progress: number;
+}
+
+function StepPublish({ form }: { form: ToolFormData }) {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [platforms, setPlatforms] = useState<PlatformPublishStatus[]>([
+    { id: "youtube", name: "YouTube", emoji: "📺", status: "pending", progress: 0 },
+    { id: "facebook", name: "Facebook", emoji: "📘", status: "pending", progress: 0 },
+    { id: "instagram", name: "Instagram", emoji: "📸", status: "pending", progress: 0 },
+    { id: "tiktok", name: "TikTok", emoji: "🎵", status: "scheduled", scheduledTime: "10:15 AM", progress: 0 },
+    { id: "pinterest", name: "Pinterest", emoji: "📌", status: "scheduled", scheduledTime: "10:30 AM", progress: 0 },
+  ]);
+  const [overallProgress, setOverallProgress] = useState(0);
+  const [botatoActive, setBotatoActive] = useState(true);
+  const [analyticsReady, setAnalyticsReady] = useState(false);
+  const pollingRef = useRef<ReturnType<typeof setInterval>>();
+
+  // Simulated publishing poll every 1.5s
+  useEffect(() => {
+    pollingRef.current = setInterval(() => {
+      setPlatforms((prev) => {
+        const updated = prev.map((p) => {
+          if (p.status === "published" || p.status === "failed") return p;
+          if (p.status === "scheduled") return p; // scheduled ones stay until their time
+
+          if (p.status === "pending") {
+            return { ...p, status: "publishing" as const, progress: 10 };
+          }
+
+          // publishing → increment
+          const newProgress = Math.min(p.progress + Math.random() * 18 + 8, 100);
+          if (newProgress >= 100) {
+            return {
+              ...p,
+              status: "published" as const,
+              progress: 100,
+              publishedUrl: `https://${p.id}.com/watch?v=demo_${form.toolName.replace(/\s/g, "_")}`,
+            };
+          }
+          return { ...p, progress: newProgress };
+        });
+
+        // After first 3 are published, start scheduled ones
+        const publishedCount = updated.filter((p) => p.status === "published").length;
+        if (publishedCount >= 3) {
+          return updated.map((p) =>
+            p.status === "scheduled" && p.progress === 0
+              ? { ...p, status: "publishing" as const, progress: 5 }
+              : p
+          );
+        }
+        return updated;
+      });
+    }, 1500);
+
+    return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
+  }, [form.toolName]);
+
+  // Track overall progress
+  useEffect(() => {
+    const total = platforms.reduce((sum, p) => sum + p.progress, 0);
+    const avg = total / platforms.length;
+    setOverallProgress(avg);
+
+    if (platforms.every((p) => p.status === "published" || p.status === "failed")) {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+      setAnalyticsReady(true);
+      toast({ title: "🎉 All platforms published!", description: "Your content is live everywhere." });
+    }
+  }, [platforms, toast]);
+
+  const allDone = platforms.every((p) => p.status === "published" || p.status === "failed");
+  const publishedCount = platforms.filter((p) => p.status === "published").length;
+  const failedCount = platforms.filter((p) => p.status === "failed").length;
+
+  const statusIcon = (status: PlatformPublishStatus["status"]) => {
+    switch (status) {
+      case "published": return <CheckCircle2 className="w-5 h-5 text-success" />;
+      case "publishing": return <Loader2 className="w-5 h-5 text-primary animate-spin" />;
+      case "failed": return <AlertCircle className="w-5 h-5 text-destructive" />;
+      case "scheduled": return <Clock className="w-5 h-5 text-warning" />;
+      default: return <Clock className="w-5 h-5 text-muted-foreground" />;
+    }
+  };
+
+  const statusLabel = (p: PlatformPublishStatus) => {
+    switch (p.status) {
+      case "published": return "Published";
+      case "publishing": return `Publishing... ${Math.round(p.progress)}%`;
+      case "failed": return "Failed";
+      case "scheduled": return `Scheduled ${p.scheduledTime}`;
+      default: return "Pending";
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-foreground mb-1">
+            {allDone ? "🎉 Published!" : "🚀 Publishing in Progress..."}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {allDone
+              ? "Your content is now live across all platforms."
+              : "Distributing content to all connected platforms via Botato."}
+          </p>
+        </div>
+        {allDone && (
+          <Badge className="bg-success/10 text-success border-0 text-sm font-semibold px-3 py-1">
+            {publishedCount}/{platforms.length} Live ✓
+          </Badge>
+        )}
+      </div>
+
+      {/* Overall Progress */}
+      <div className="glass rounded-xl p-5">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-medium text-foreground">Overall Progress</p>
+          <span className="text-sm font-bold text-primary">{Math.round(overallProgress)}%</span>
+        </div>
+        <div className="h-3 rounded-full bg-muted overflow-hidden">
+          <motion.div
+            className="h-full rounded-full"
+            style={{ background: "linear-gradient(90deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+            animate={{ width: `${Math.min(overallProgress, 100)}%` }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          />
+        </div>
+        <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-success" /> {publishedCount} Published</span>
+          {failedCount > 0 && <span className="flex items-center gap-1"><AlertCircle className="w-3 h-3 text-destructive" /> {failedCount} Failed</span>}
+          <span className="flex items-center gap-1"><Loader2 className="w-3 h-3" /> {platforms.filter((p) => p.status === "publishing").length} In Progress</span>
+        </div>
+      </div>
+
+      {/* Per-platform Status */}
+      <div className="space-y-3">
+        {platforms.map((p) => (
+          <motion.div
+            key={p.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass rounded-xl p-4"
+          >
+            <div className="flex items-center gap-4">
+              {/* Platform icon & name */}
+              <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center text-lg shrink-0">
+                {p.emoji}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm font-medium text-foreground">{p.name}</p>
+                  <div className="flex items-center gap-2">
+                    {statusIcon(p.status)}
+                    <span className={`text-xs font-medium ${
+                      p.status === "published" ? "text-success" :
+                      p.status === "failed" ? "text-destructive" :
+                      p.status === "publishing" ? "text-primary" :
+                      "text-muted-foreground"
+                    }`}>
+                      {statusLabel(p)}
+                    </span>
+                  </div>
+                </div>
+                {/* Progress bar per platform */}
+                {(p.status === "publishing" || p.status === "published") && (
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{
+                        background: p.status === "published"
+                          ? "hsl(var(--success))"
+                          : "linear-gradient(90deg, hsl(214 84% 50%), hsl(155 100% 41%))",
+                      }}
+                      animate={{ width: `${p.progress}%` }}
+                      transition={{ duration: 0.4 }}
+                    />
+                  </div>
+                )}
+              </div>
+              {/* View link */}
+              {p.status === "published" && p.publishedUrl && (
+                <a
+                  href={p.publishedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-primary hover:underline flex items-center gap-1 shrink-0"
+                >
+                  View <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+              {p.status === "failed" && (
+                <Button size="sm" variant="outline" className="text-xs border-destructive/30 text-destructive hover:bg-destructive/10 shrink-0">
+                  <RefreshCw className="w-3 h-3 mr-1" /> Retry
+                </Button>
+              )}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Botato Status */}
+      <div className="glass rounded-xl p-5 space-y-3" style={{ borderColor: "hsl(var(--primary) / 0.3)" }}>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}>
+            🤖
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-foreground">Botato Workflow</p>
+            <p className="text-xs text-muted-foreground">
+              {allDone ? "Auto-engagement active across all platforms" : "Waiting for all platforms to publish..."}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {botatoActive ? (
+              <Badge className="bg-success/10 text-success border-0 text-[10px]">
+                <Wifi className="w-3 h-3 mr-1" /> Active
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="border-muted text-muted-foreground text-[10px]">
+                <WifiOff className="w-3 h-3 mr-1" /> Inactive
+              </Badge>
+            )}
+          </div>
+        </div>
+        {allDone && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-3 gap-3">
+            <div className="bg-muted/30 rounded-lg p-3 text-center">
+              <p className="text-lg font-bold text-foreground">{publishedCount}</p>
+              <p className="text-[10px] text-muted-foreground">Posts Live</p>
+            </div>
+            <div className="bg-muted/30 rounded-lg p-3 text-center">
+              <p className="text-lg font-bold text-success">ON</p>
+              <p className="text-[10px] text-muted-foreground">Auto-Engagement</p>
+            </div>
+            <div className="bg-muted/30 rounded-lg p-3 text-center">
+              <p className="text-lg font-bold text-primary">50K-100K</p>
+              <p className="text-[10px] text-muted-foreground">Est. Impressions</p>
+            </div>
+          </motion.div>
+        )}
+      </div>
+
+      {/* Analytics Notice */}
+      <div className="glass rounded-xl p-5 text-center">
+        <div className="w-12 h-12 rounded-2xl bg-primary/10 mx-auto mb-3 flex items-center justify-center">
+          <BarChart3 className="w-6 h-6 text-primary" />
+        </div>
+        <p className="text-sm font-medium text-foreground mb-1">
+          {analyticsReady ? "Analytics are being collected" : "📊 Analytics available in 24 hours"}
+        </p>
+        <p className="text-xs text-muted-foreground mb-4">
+          Track views, engagement, and conversions across all platforms in real-time.
+        </p>
+      </div>
+
+      {/* Final Actions */}
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          onClick={() => navigate("/analytics")}
+          className="gap-2 font-semibold text-foreground"
+          style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+        >
+          <BarChart3 className="w-4 h-4" /> View Analytics
+        </Button>
+        <Button
+          onClick={() => navigate("/create")}
+          variant="outline"
+          className="gap-2 border-border text-foreground hover:bg-muted"
+        >
+          <Plus className="w-4 h-4" /> Create New
+        </Button>
+        <Button
+          variant="outline"
+          className="gap-2 border-primary/30 text-primary hover:bg-primary/10"
+        >
+          🤖 Botato Dashboard
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────
    Generic Step Placeholder
    ────────────────────────────────── */
 function StepPlaceholder({ stepIndex }: { stepIndex: number }) {
