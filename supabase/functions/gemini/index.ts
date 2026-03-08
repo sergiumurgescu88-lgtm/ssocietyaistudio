@@ -9,6 +9,7 @@ const GEMINI_KEYS = [
   Deno.env.get('GEMINI_API_KEY_1') || '',
   Deno.env.get('GEMINI_API_KEY_2') || '',
   Deno.env.get('GEMINI_API_KEY_3') || '',
+  Deno.env.get('GEMINI_API_KEY_4') || '',
 ].filter(Boolean);
 
 async function retryWithFallback<T>(operation: (apiKey: string) => Promise<T>): Promise<T> {
