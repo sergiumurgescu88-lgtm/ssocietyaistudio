@@ -179,45 +179,83 @@ const Hero = () => {
           className="glass rounded-2xl p-8 max-w-5xl mx-auto"
         >
           <p className="text-xs text-muted-foreground text-center mb-6 uppercase tracking-widest font-semibold">Your Content Pipeline — 10 Steps, Full Control</p>
-          <div className="grid grid-cols-5 gap-y-6 gap-x-0 items-center">
+          
+          {/* Row 1: Steps 1-5 */}
+          <div className="flex items-start justify-center gap-0">
             {[
               { label: "Input", icon: "🔗", desc: "Enter URL" },
               { label: "Script", icon: "📝", desc: "AI generates" },
               { label: "Audio", icon: "🎙️", desc: "TTS voices" },
               { label: "Thumbnail", icon: "🎨", desc: "3 variations" },
               { label: "Video", icon: "🎬", desc: "Kie.ai render" },
+            ].map((step, i) => (
+              <div key={step.label} className="flex items-center">
+                <div className="flex flex-col items-center gap-1 group w-16 sm:w-20">
+                  <div className="relative w-11 h-11 sm:w-14 sm:h-14 rounded-2xl flex flex-col items-center justify-center font-bold transition-transform group-hover:scale-110 bg-primary/20 text-primary border border-primary/30">
+                    <span className="text-sm sm:text-base leading-none">{step.icon}</span>
+                    <span className="text-[9px] sm:text-[10px] font-bold leading-none mt-0.5">{String(i + 1).padStart(2, "0")}</span>
+                  </div>
+                  <span className="text-[10px] sm:text-xs font-semibold text-foreground">{step.label}</span>
+                  <span className="text-[9px] sm:text-[10px] text-muted-foreground leading-tight text-center">{step.desc}</span>
+                  <div className="flex items-center gap-0.5">
+                    <Check className="w-3 h-3 text-secondary" />
+                    <span className="text-[8px] sm:text-[9px] text-secondary font-medium">Confirm</span>
+                  </div>
+                </div>
+                {i < 4 && (
+                  <div className="flex flex-col items-center mx-0.5 sm:mx-1">
+                    <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-primary/60" />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Curved connection arrow row 1 → row 2 */}
+          <div className="flex justify-center my-3">
+            <div className="flex items-center gap-2 text-muted-foreground/60">
+              <div className="w-16 h-[2px] bg-gradient-to-r from-primary/40 to-secondary/40 rounded-full" />
+              <ChevronDown className="w-5 h-5 text-secondary/60 animate-bounce" />
+              <div className="w-16 h-[2px] bg-gradient-to-r from-secondary/40 to-primary/40 rounded-full" />
+            </div>
+          </div>
+
+          {/* Row 2: Steps 6-10 */}
+          <div className="flex items-start justify-center gap-0">
+            {[
               { label: "SEO", icon: "🔍", desc: "Optimize" },
               { label: "Social", icon: "📱", desc: "Captions" },
               { label: "Review", icon: "👁️", desc: "Preview all" },
               { label: "Publish", icon: "🚀", desc: "Auto-post" },
               { label: "Track", icon: "📊", desc: "Analytics" },
-            ].map((step, i) => (
-              <div key={step.label} className="flex items-center justify-center">
-                <div className="flex items-center gap-1">
-                  {/* Step card */}
-                  <div className="flex flex-col items-center gap-1.5 group">
-                    <div className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex flex-col items-center justify-center font-bold text-sm transition-transform group-hover:scale-110 ${
-                      i < 5 ? "bg-primary/20 text-primary border border-primary/30" : i < 8 ? "bg-secondary/20 text-secondary border border-secondary/30" : "bg-accent/20 text-accent border border-accent/30"
-                    }`}>
-                      <span className="text-base leading-none">{step.icon}</span>
-                      <span className="text-[10px] font-bold leading-none mt-0.5">{String(i + 1).padStart(2, "0")}</span>
+            ].map((step, i) => {
+              const globalIdx = i + 5;
+              const colorClass = globalIdx < 8 ? "bg-secondary/20 text-secondary border-secondary/30" : "bg-accent/20 text-accent border-accent/30";
+              const arrowColor = globalIdx < 8 ? "text-secondary/60" : "text-accent/60";
+              return (
+                <div key={step.label} className="flex items-center">
+                  <div className="flex flex-col items-center gap-1 group w-16 sm:w-20">
+                    <div className={`relative w-11 h-11 sm:w-14 sm:h-14 rounded-2xl flex flex-col items-center justify-center font-bold transition-transform group-hover:scale-110 border ${colorClass}`}>
+                      <span className="text-sm sm:text-base leading-none">{step.icon}</span>
+                      <span className="text-[9px] sm:text-[10px] font-bold leading-none mt-0.5">{String(globalIdx + 1).padStart(2, "0")}</span>
                     </div>
-                    <span className="text-xs font-semibold text-foreground">{step.label}</span>
-                    <span className="text-[10px] text-muted-foreground">{step.desc}</span>
-                    <div className="flex items-center gap-0.5 mt-0.5">
+                    <span className="text-[10px] sm:text-xs font-semibold text-foreground">{step.label}</span>
+                    <span className="text-[9px] sm:text-[10px] text-muted-foreground leading-tight text-center">{step.desc}</span>
+                    <div className="flex items-center gap-0.5">
                       <Check className="w-3 h-3 text-secondary" />
-                      <span className="text-[9px] text-secondary font-medium">Confirm</span>
+                      <span className="text-[8px] sm:text-[9px] text-secondary font-medium">Confirm</span>
                     </div>
                   </div>
-
-                  {/* Arrow between steps (not after last in row or last overall) */}
-                  {i !== 4 && i !== 9 && (
-                    <ArrowRight className={`w-4 h-4 mx-1 shrink-0 ${i < 5 ? "text-primary/50" : i < 8 ? "text-secondary/50" : "text-accent/50"}`} />
+                  {i < 4 && (
+                    <div className="flex flex-col items-center mx-0.5 sm:mx-1">
+                      <ArrowRight className={`w-5 h-5 sm:w-6 sm:h-6 ${arrowColor}`} />
+                    </div>
                   )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+
           <div className="mt-6 flex items-center justify-center gap-2">
             <div className="flex items-center gap-4 text-[11px] text-muted-foreground">
               <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-primary/40" /> Steps 1-5: Creation</span>
