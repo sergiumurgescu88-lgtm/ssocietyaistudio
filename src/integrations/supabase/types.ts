@@ -22,6 +22,7 @@ export type Database = {
           metadata: Json | null
           project_id: string | null
           resolved: boolean | null
+          resolved_at: string | null
           status: string
           title: string
           type: string
@@ -34,6 +35,7 @@ export type Database = {
           metadata?: Json | null
           project_id?: string | null
           resolved?: boolean | null
+          resolved_at?: string | null
           status?: string
           title: string
           type?: string
@@ -46,6 +48,7 @@ export type Database = {
           metadata?: Json | null
           project_id?: string | null
           resolved?: boolean | null
+          resolved_at?: string | null
           status?: string
           title?: string
           type?: string
@@ -63,8 +66,10 @@ export type Database = {
       }
       projects: {
         Row: {
+          analytics: Json | null
           audience: string[] | null
           created_at: string
+          current_step: number | null
           description: string | null
           duration: number | null
           female_speaker_name: string | null
@@ -72,16 +77,22 @@ export type Database = {
           keywords: string[] | null
           male_speaker_name: string | null
           name: string
+          platforms: Json | null
+          published_at: string | null
           script: string | null
           seo_content: Json | null
           status: string
+          thumbnail_url: string | null
           updated_at: string
+          url: string | null
           use_custom_speakers: boolean | null
           user_id: string
         }
         Insert: {
+          analytics?: Json | null
           audience?: string[] | null
           created_at?: string
+          current_step?: number | null
           description?: string | null
           duration?: number | null
           female_speaker_name?: string | null
@@ -89,16 +100,22 @@ export type Database = {
           keywords?: string[] | null
           male_speaker_name?: string | null
           name: string
+          platforms?: Json | null
+          published_at?: string | null
           script?: string | null
           seo_content?: Json | null
           status?: string
+          thumbnail_url?: string | null
           updated_at?: string
+          url?: string | null
           use_custom_speakers?: boolean | null
           user_id: string
         }
         Update: {
+          analytics?: Json | null
           audience?: string[] | null
           created_at?: string
+          current_step?: number | null
           description?: string | null
           duration?: number | null
           female_speaker_name?: string | null
@@ -106,10 +123,14 @@ export type Database = {
           keywords?: string[] | null
           male_speaker_name?: string | null
           name?: string
+          platforms?: Json | null
+          published_at?: string | null
           script?: string | null
           seo_content?: Json | null
           status?: string
+          thumbnail_url?: string | null
           updated_at?: string
+          url?: string | null
           use_custom_speakers?: boolean | null
           user_id?: string
         }
@@ -118,24 +139,36 @@ export type Database = {
       user_preferences: {
         Row: {
           created_at: string
+          failed_login_attempts: number | null
           female_speaker_name: string
           id: string
+          last_login: string | null
+          last_login_ip: string | null
+          last_login_location: string | null
           male_speaker_name: string
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          failed_login_attempts?: number | null
           female_speaker_name?: string
           id?: string
+          last_login?: string | null
+          last_login_ip?: string | null
+          last_login_location?: string | null
           male_speaker_name?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          failed_login_attempts?: number | null
           female_speaker_name?: string
           id?: string
+          last_login?: string | null
+          last_login_ip?: string | null
+          last_login_location?: string | null
           male_speaker_name?: string
           updated_at?: string
           user_id?: string
