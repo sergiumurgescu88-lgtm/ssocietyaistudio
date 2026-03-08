@@ -1,20 +1,30 @@
 import { supabase } from "@/integrations/supabase/client";
+import { activityLogService } from "./activityLog";
 
 export const firebaseService = {
   // Auth
   async signUp(email: string, password: string) {
     const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) throw error;
+    if (error) {
+      activityLogService.log({ type: 'auth', status: 'error', title: 'Sign Up Failed', description: error.message });
+      throw error;
+    }
+    activityLogService.log({ type: 'auth', status: 'success', title: 'User Signed Up', description: `New account: ${email}` });
     return data.user;
   },
 
   async signIn(email: string, password: string) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    if (error) {
+      activityLogService.log({ type: 'auth', status: 'warning', title: 'Failed Login Attempt', description: error.message });
+      throw error;
+    }
+    activityLogService.log({ type: 'auth', status: 'success', title: 'User Login', description: `Logged in with email` });
     return data.user;
   },
 
   async logout() {
+    activityLogService.log({ type: 'auth', status: 'success', title: 'User Logout', description: 'User signed out' });
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   },
@@ -24,11 +34,13 @@ export const firebaseService = {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     if (error) throw error;
+    activityLogService.log({ type: 'auth', status: 'success', title: 'Password Reset Requested', description: `Reset email sent to ${email}` });
   },
 
   async updatePassword(password: string) {
     const { error } = await supabase.auth.updateUser({ password });
     if (error) throw error;
+    activityLogService.log({ type: 'settings', status: 'success', title: 'Password Updated', description: 'Password changed successfully' });
   },
 
   // Projects
@@ -42,6 +54,7 @@ export const firebaseService = {
       .select()
       .single();
     if (error) throw error;
+    activityLogService.log({ type: 'save', status: 'success', title: 'Project Created', description: `Created: ${projectData.name || 'Untitled'}`, project_id: data.id });
     return data;
   },
 
@@ -51,6 +64,7 @@ export const firebaseService = {
       .update(updates)
       .eq('id', projectId);
     if (error) throw error;
+    activityLogService.log({ type: 'save', status: 'success', title: 'Project Updated', project_id: projectId });
   },
 
   async deleteProject(projectId: string) {
@@ -59,6 +73,7 @@ export const firebaseService = {
       .delete()
       .eq('id', projectId);
     if (error) throw error;
+    activityLogService.log({ type: 'delete', status: 'success', title: 'Project Deleted', project_id: projectId });
   },
 
   async getProjects() {
@@ -71,17 +86,13 @@ export const firebaseService = {
   },
 
   subscribeToProjects(callback: (projects: any[]) => void) {
-    // Initial fetch
     this.getProjects().then(callback);
-
-    // Realtime subscription
     const channel = supabase
       .channel('projects-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
         this.getProjects().then(callback);
       })
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   },
 
