@@ -12,7 +12,7 @@ import {
 } from "recharts";
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
-const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } } };
+const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } } };
 
 const stats = [
   { icon: FolderOpen, label: "Total Projects", value: "24", change: "+3", positive: true, color: "primary" },
