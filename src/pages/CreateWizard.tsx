@@ -8,6 +8,7 @@ import {
   Play, Pause, Volume2, VolumeX, Upload, Settings2, SkipBack, SkipForward,
   ExternalLink, BarChart3, Plus, AlertCircle, Wifi, WifiOff
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
