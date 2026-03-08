@@ -2543,7 +2543,8 @@ export default function CreateWizard() {
       case 5: return <StepVideo form={form} onApprove={() => setCurrentStep(6)} />;
       case 6: return <StepSeo form={form} onApprove={() => setCurrentStep(7)} />;
       case 7: return <StepSocial form={form} onApprove={() => setCurrentStep(8)} />;
-      case 8: return <StepReview form={form} onBack={(step) => setCurrentStep(step)} />;
+      case 8: return <StepReview form={form} onBack={(step) => setCurrentStep(step)} onPublish={() => setCurrentStep(9)} />;
+      case 9: return <StepPublish form={form} />;
       default: return <StepPlaceholder stepIndex={currentStep} />;
     }
   };
