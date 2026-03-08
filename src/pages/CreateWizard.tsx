@@ -1846,6 +1846,708 @@ function StepVideo({ form, onApprove }: { form: ToolFormData; onApprove: () => v
 }
 
 /* ──────────────────────────────────
+   STEP 6: SEO Content
+   ────────────────────────────────── */
+
+const seoTabs = ["YouTube", "Blog", "Social", "Email"] as const;
+type SeoTab = typeof seoTabs[number];
+
+const defaultSeoContent: Record<SeoTab, { title: string; body: string; tags: string }> = {
+  YouTube: {
+    title: "🚀 AI Content Factory — Automatizează-ți Tot Conținutul | S Society Tech Talk",
+    body: `Descoperă cum poți automatiza complet crearea de conținut video, audio și text cu ajutorul AI.
+
+În acest episod, Alina discută cu Sergiu, fondatorul platformei de automatizare a conținutului bazată pe AI, despre cum tool-ul lor folosește Gemini 2.5 Pro, Google Cloud TTS și Kie.ai pentru a genera automat tot ce ai nevoie — de la scripturi de podcast la videoclipuri optimizate pentru fiecare platformă.
+
+📌 Ce vei învăța:
+• Cum funcționează pipeline-ul AI end-to-end
+• Studiu de caz real: reducerea timpului de creare cu 80%
+• Cele 3 beneficii principale ale automatizării conținutului
+• Cum să începi gratuit cu free tier-ul disponibil
+
+🔗 Link-uri utile:
+• Website: https://example.com
+• Free Trial: https://example.com/signup
+• Blog: https://example.com/blog
+
+⏰ Timestamps:
+0:00 - Intro
+0:30 - Ce face tool-ul
+1:30 - Demo live
+2:30 - Studiu de caz
+3:00 - CTA & Încheiere
+
+#AIContent #Automatizare #ContentCreation #MarketingDigital #SocietyTechTalk`,
+    tags: "AI content, automatizare conținut, marketing digital, Gemini AI, content creation, podcast, tech talk",
+  },
+  Blog: {
+    title: "Cum să Automatizezi Crearea de Conținut cu AI — Ghid Complet 2025",
+    body: `Crearea de conținut de calitate pentru multiple platforme este una dintre cele mai mari provocări pentru marketeri în 2025. Ce ar fi dacă ai putea introduce informațiile o singură dată și să primești automat tot ce ai nevoie?
+
+## De ce contează automatizarea conținutului
+
+Echipele de marketing petrec în medie 15-20 ore pe săptămână doar pe crearea de conținut. Cu o platformă bazată pe AI, acest timp se reduce dramatic.
+
+## Cum funcționează
+
+Pipeline-ul nostru folosește trei tehnologii principale:
+1. **Gemini 2.5 Pro** — pentru generarea de scripturi și texte
+2. **Google Cloud TTS** — pentru audio de calitate studio
+3. **Kie.ai** — pentru producție video multi-platform
+
+## Rezultate reale
+
+O agenție de marketing din București a redus timpul de creare a conținutului cu 80%, menținând calitatea comparabilă cu o echipă de 5 persoane.
+
+## Începe astăzi
+
+Platforma oferă un free tier complet funcțional. Creează-ți primul proiect în mai puțin de 5 minute.`,
+    tags: "automatizare conținut, AI marketing, content strategy, blog, ghid",
+  },
+  Social: {
+    title: "LinkedIn / Instagram / Twitter Posts",
+    body: `🔥 LinkedIn:
+Am redus timpul de creare a conținutului cu 80% folosind AI. Iată cum:
+
+Platforma noastră generează automat:
+✅ Scripturi de podcast
+✅ Audio cu voci distincte
+✅ Video pentru 6+ platforme
+✅ SEO optimizat
+
+Rezultat? O agenție din București produce acum conținut pentru 10 clienți cu o echipă de 2 persoane.
+
+#AIContent #MarketingAutomation #ContentCreation
+
+---
+
+📸 Instagram:
+Automatizează-ți conținutul cu AI! 🤖✨
+De la script la video publicat — totul într-un singur click.
+
+Link in bio 👆
+
+---
+
+🐦 Twitter/X:
+🚀 Just launched: AI-powered content factory
+
+One input → Script + Audio + Video + SEO for 6 platforms
+
+80% time savings. Real results.
+
+Try free → link`,
+    tags: "social media, linkedin, instagram, twitter, content automation",
+  },
+  Email: {
+    title: "Subject: Automatizează-ți Conținutul — Încearcă Gratuit",
+    body: `Salut {{name}},
+
+Știu cât de greu este să creezi conținut de calitate pentru toate platformele. De aceea am construit ceva care te va ajuta.
+
+Cu noua noastră platformă AI poți:
+→ Genera scripturi de podcast în câteva secunde
+→ Crea video-uri optimizate pentru YouTube, TikTok, Instagram
+→ Obține texte SEO-ready pentru fiecare platformă
+
+Un client real a redus timpul de producție cu 80%.
+
+Încearcă gratuit aici: [CTA Button]
+
+Cu drag,
+Echipa S Society`,
+    tags: "email marketing, newsletter, automation, AI",
+  },
+};
+
+function StepSeo({ form, onApprove }: { form: ToolFormData; onApprove: () => void }) {
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState<SeoTab>("YouTube");
+  const [content, setContent] = useState(defaultSeoContent);
+  const [seoScore, setSeoScore] = useState(78);
+  const [locked, setLocked] = useState(false);
+
+  const current = content[activeTab];
+  const titleLimit = activeTab === "YouTube" ? 100 : activeTab === "Email" ? 60 : 70;
+  const bodyLimit = activeTab === "YouTube" ? 5000 : activeTab === "Blog" ? 10000 : 2200;
+
+  const handleApprove = () => {
+    setLocked(true);
+    toast({ title: "SEO Content Approved ✓", description: "All platform content locked. Proceeding to social connections." });
+    setTimeout(onApprove, 600);
+  };
+
+  const updateField = (field: "title" | "body" | "tags", value: string) => {
+    setContent((c) => ({ ...c, [activeTab]: { ...c[activeTab], [field]: value } }));
+    // Simulate score change
+    setSeoScore(Math.min(100, Math.max(40, 78 + Math.floor(Math.random() * 10 - 5))));
+  };
+
+  const scoreColor = seoScore >= 80 ? "text-success" : seoScore >= 60 ? "text-warning" : "text-accent";
+  const scoreBg = seoScore >= 80 ? "bg-success" : seoScore >= 60 ? "bg-warning" : "bg-accent";
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-foreground mb-1">
+            {locked ? "🔒 SEO Content Approved" : "🔍 SEO Content Generation"}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {locked ? "All content locked. Proceeding to social connections." : "AI-optimized copy for every platform. Edit inline."}
+          </p>
+        </div>
+        {/* SEO Score */}
+        <div className="flex items-center gap-3">
+          <div className="glass rounded-lg px-4 py-2 flex items-center gap-3">
+            <div className="relative w-10 h-10">
+              <svg className="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15" fill="none" stroke="hsl(var(--muted))" strokeWidth="3" />
+                <circle cx="18" cy="18" r="15" fill="none" stroke={seoScore >= 80 ? "hsl(var(--success))" : seoScore >= 60 ? "hsl(var(--warning))" : "hsl(var(--accent))"} strokeWidth="3" strokeDasharray={`${seoScore * 0.942} 100`} strokeLinecap="round" />
+              </svg>
+              <span className={`absolute inset-0 flex items-center justify-center text-xs font-bold ${scoreColor}`}>{seoScore}</span>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-foreground">SEO Score</p>
+              <p className={`text-[10px] font-medium ${scoreColor}`}>{seoScore >= 80 ? "Excellent" : seoScore >= 60 ? "Good" : "Needs Work"}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="glass rounded-xl overflow-hidden">
+        <div className="flex border-b border-border">
+          {seoTabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 py-3 text-sm font-medium transition-all duration-200 ${
+                activeTab === tab
+                  ? "text-primary border-b-2 border-primary bg-primary/5"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+              }`}
+            >
+              {tab === "YouTube" && "📺 "}{tab === "Blog" && "📝 "}{tab === "Social" && "📱 "}{tab === "Email" && "✉️ "}{tab}
+            </button>
+          ))}
+        </div>
+
+        <div className="p-5 space-y-4">
+          {/* Title */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-sm font-medium text-foreground">Title</label>
+              <span className={`text-[10px] ${current.title.length > titleLimit ? "text-accent" : "text-muted-foreground"}`}>
+                {current.title.length}/{titleLimit}
+              </span>
+            </div>
+            <Input
+              value={current.title}
+              onChange={(e) => updateField("title", e.target.value)}
+              disabled={locked}
+              className="bg-muted border-border"
+            />
+          </div>
+
+          {/* Body */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-sm font-medium text-foreground">Content</label>
+              <span className={`text-[10px] ${current.body.length > bodyLimit ? "text-accent" : "text-muted-foreground"}`}>
+                {current.body.length}/{bodyLimit}
+              </span>
+            </div>
+            <Textarea
+              value={current.body}
+              onChange={(e) => updateField("body", e.target.value)}
+              disabled={locked}
+              className="bg-muted border-border min-h-[280px] font-mono text-xs leading-relaxed"
+            />
+          </div>
+
+          {/* Tags */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-sm font-medium text-foreground">Tags / Keywords</label>
+              <span className="text-[10px] text-muted-foreground">{current.tags.split(",").length} tags</span>
+            </div>
+            <Input
+              value={current.tags}
+              onChange={(e) => updateField("tags", e.target.value)}
+              disabled={locked}
+              className="bg-muted border-border text-xs"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      {!locked && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            onClick={handleApprove}
+            className="gap-2 font-semibold text-foreground"
+            style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+          >
+            <Lock className="w-4 h-4" /> Approve & Continue
+          </Button>
+          <Button variant="outline" onClick={() => toast({ title: "Regenerating SEO content...", description: "AI will create fresh optimized copy." })} className="gap-1.5 border-border text-foreground hover:bg-muted">
+            <RefreshCw className="w-4 h-4" /> Regenerate
+          </Button>
+          <Button variant="outline" onClick={() => { navigator.clipboard.writeText(`${current.title}\n\n${current.body}\n\nTags: ${current.tags}`); toast({ title: "Copied!" }); }} className="gap-1.5 border-border text-foreground hover:bg-muted ml-auto">
+            <Copy className="w-4 h-4" /> Copy {activeTab}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ──────────────────────────────────
+   STEP 7: Social Media Connections
+   ────────────────────────────────── */
+
+interface PlatformConnection {
+  id: string;
+  name: string;
+  icon: string;
+  connected: boolean;
+  scheduleTime: string;
+  enabled: boolean;
+}
+
+const defaultPlatforms: PlatformConnection[] = [
+  { id: "youtube", name: "YouTube", icon: "📺", connected: true, scheduleTime: "immediate", enabled: true },
+  { id: "facebook", name: "Facebook", icon: "📘", connected: true, scheduleTime: "+5min", enabled: true },
+  { id: "instagram", name: "Instagram", icon: "📸", connected: true, scheduleTime: "+10min", enabled: true },
+  { id: "tiktok", name: "TikTok", icon: "🎵", connected: true, scheduleTime: "+15min", enabled: true },
+  { id: "pinterest", name: "Pinterest", icon: "📌", connected: true, scheduleTime: "+30min", enabled: true },
+  { id: "linkedin", name: "LinkedIn", icon: "💼", connected: false, scheduleTime: "+20min", enabled: false },
+  { id: "twitter", name: "Twitter/X", icon: "🐦", connected: false, scheduleTime: "+25min", enabled: false },
+];
+
+const scheduleOptions = [
+  { value: "immediate", label: "Immediately" },
+  { value: "+5min", label: "+5 minutes" },
+  { value: "+10min", label: "+10 minutes" },
+  { value: "+15min", label: "+15 minutes" },
+  { value: "+20min", label: "+20 minutes" },
+  { value: "+25min", label: "+25 minutes" },
+  { value: "+30min", label: "+30 minutes" },
+  { value: "+1hr", label: "+1 hour" },
+  { value: "+2hr", label: "+2 hours" },
+  { value: "custom", label: "Custom time..." },
+];
+
+function StepSocial({ form, onApprove }: { form: ToolFormData; onApprove: () => void }) {
+  const { toast } = useToast();
+  const [platforms, setPlatforms] = useState(defaultPlatforms);
+  const [locked, setLocked] = useState(false);
+  const [bulkTime, setBulkTime] = useState("");
+
+  const connectedCount = platforms.filter((p) => p.connected).length;
+  const enabledCount = platforms.filter((p) => p.enabled).length;
+
+  const handleConnect = (id: string) => {
+    toast({ title: "OAuth Flow", description: `Redirecting to ${id} authorization... (simulated)` });
+    setTimeout(() => {
+      setPlatforms((ps) => ps.map((p) => p.id === id ? { ...p, connected: true, enabled: true } : p));
+      toast({ title: "Connected!", description: `${id} account successfully connected.` });
+    }, 1500);
+  };
+
+  const handleApprove = () => {
+    if (enabledCount === 0) {
+      toast({ title: "No platforms enabled", description: "Enable at least one platform to continue.", variant: "destructive" });
+      return;
+    }
+    setLocked(true);
+    toast({ title: "Platforms Configured ✓", description: `${enabledCount} platforms scheduled. Proceeding to final review.` });
+    setTimeout(onApprove, 600);
+  };
+
+  const handleBulkSchedule = () => {
+    if (!bulkTime) return;
+    setPlatforms((ps) => ps.map((p) => p.connected && p.enabled ? { ...p, scheduleTime: bulkTime } : p));
+    toast({ title: "Bulk Schedule Applied", description: `All enabled platforms set to ${scheduleOptions.find((o) => o.value === bulkTime)?.label}.` });
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-foreground mb-1">
+            {locked ? "🔒 Platforms Configured" : "🔗 Social Media Connections"}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {locked ? `${enabledCount} platforms scheduled.` : "Connect and schedule publishing for each platform."}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="border-success/30 text-success text-xs">{connectedCount} connected</Badge>
+          <Badge variant="outline" className="border-primary/30 text-primary text-xs">{enabledCount} enabled</Badge>
+        </div>
+      </div>
+
+      {/* Bulk schedule */}
+      {!locked && (
+        <div className="glass rounded-xl p-4 flex items-center gap-3 flex-wrap">
+          <Clock className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm text-foreground font-medium">Bulk Schedule:</span>
+          <select
+            value={bulkTime}
+            onChange={(e) => setBulkTime(e.target.value)}
+            className="h-9 rounded-lg bg-muted border border-border px-3 text-sm text-foreground"
+          >
+            <option value="">Select time...</option>
+            {scheduleOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+          <Button size="sm" variant="outline" onClick={handleBulkSchedule} disabled={!bulkTime} className="border-border text-foreground hover:bg-muted">
+            Apply to All
+          </Button>
+        </div>
+      )}
+
+      {/* Platform list */}
+      <div className="space-y-2">
+        {platforms.map((platform) => (
+          <div
+            key={platform.id}
+            className={`glass rounded-xl p-4 flex items-center gap-4 transition-all duration-200 ${
+              locked && !platform.enabled ? "opacity-40" : ""
+            } ${platform.enabled ? "ring-1 ring-primary/20" : ""}`}
+          >
+            {/* Icon + Name */}
+            <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center text-xl shrink-0">
+              {platform.icon}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-foreground">{platform.name}</p>
+                {platform.connected ? (
+                  <Badge className="bg-success/10 text-success border-0 text-[10px]">✓ Connected</Badge>
+                ) : (
+                  <Badge className="bg-warning/10 text-warning border-0 text-[10px]">⚠ Not Connected</Badge>
+                )}
+              </div>
+              {platform.connected && platform.enabled && (
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  Scheduled: {scheduleOptions.find((o) => o.value === platform.scheduleTime)?.label || platform.scheduleTime}
+                </p>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 shrink-0">
+              {!platform.connected ? (
+                <Button
+                  size="sm"
+                  onClick={() => handleConnect(platform.id)}
+                  disabled={locked}
+                  className="gap-1.5 text-foreground font-semibold text-xs"
+                  style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+                >
+                  <Share2 className="w-3.5 h-3.5" /> Connect
+                </Button>
+              ) : (
+                <>
+                  <select
+                    value={platform.scheduleTime}
+                    onChange={(e) => !locked && setPlatforms((ps) => ps.map((p) => p.id === platform.id ? { ...p, scheduleTime: e.target.value } : p))}
+                    disabled={locked || !platform.enabled}
+                    className="h-8 rounded-lg bg-muted border border-border px-2 text-xs text-foreground"
+                  >
+                    {scheduleOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                  <button
+                    onClick={() => !locked && setPlatforms((ps) => ps.map((p) => p.id === platform.id ? { ...p, enabled: !p.enabled } : p))}
+                    disabled={locked}
+                    className={`w-10 h-5 rounded-full transition-colors relative ${
+                      platform.enabled ? "bg-success" : "bg-muted"
+                    }`}
+                  >
+                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-foreground transition-transform ${
+                      platform.enabled ? "left-[22px]" : "left-0.5"
+                    }`} />
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Actions */}
+      {!locked && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            onClick={handleApprove}
+            className="gap-2 font-semibold text-foreground"
+            style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+          >
+            <Lock className="w-4 h-4" /> Confirm & Continue
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ──────────────────────────────────
+   STEP 8: Final Review + Botato
+   ────────────────────────────────── */
+
+interface ReviewSection {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  step: number;
+  status: "ready" | "needs-edit";
+  summary: string;
+}
+
+function StepReview({ form, onBack }: { form: ToolFormData; onBack: (step: number) => void }) {
+  const { toast } = useToast();
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [autoEngagement, setAutoEngagement] = useState(true);
+  const [publishing, setPublishing] = useState(false);
+  const [publishProgress, setPublishProgress] = useState(0);
+
+  const sections: ReviewSection[] = [
+    { id: "script", label: "Script", icon: <FileText className="w-4 h-4" />, step: 2, status: "ready", summary: "11 dialogue lines • ~180s • Romanian • 2 speakers" },
+    { id: "audio", label: "Audio", icon: <Headphones className="w-4 h-4" />, step: 3, status: "ready", summary: "48kHz WAV • Wavenet voices • 180s duration" },
+    { id: "thumbnail", label: "Thumbnail", icon: <Image className="w-4 h-4" />, step: 4, status: "ready", summary: "Variation A selected • 1280×720 • Professional style" },
+    { id: "video", label: "Video", icon: <Video className="w-4 h-4" />, step: 5, status: "ready", summary: "6 platform variants • 1080p • Auto-subtitles ON" },
+    { id: "seo", label: "SEO Content", icon: <Search className="w-4 h-4" />, step: 6, status: "ready", summary: "YouTube, Blog, Social, Email • Score: 78/100" },
+    { id: "platforms", label: "Platforms", icon: <Share2 className="w-4 h-4" />, step: 7, status: "ready", summary: "5 platforms connected • Staggered schedule" },
+  ];
+
+  const handlePublish = () => {
+    setPublishing(true);
+    setPublishProgress(0);
+    const interval = setInterval(() => {
+      setPublishProgress((p) => {
+        if (p >= 100) {
+          clearInterval(interval);
+          toast({ title: "🚀 Published Successfully!", description: "Content is live across all platforms." });
+          return 100;
+        }
+        return p + Math.random() * 4 + 2;
+      });
+    }, 300);
+  };
+
+  const handleDraft = () => {
+    toast({ title: "Draft Saved", description: "Your project has been saved as a draft. Resume anytime from the Projects page." });
+  };
+
+  if (publishing) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-foreground mb-1">
+            {publishProgress >= 100 ? "🎉 Published!" : "🚀 Publishing..."}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {publishProgress >= 100 ? "Your content is now live across all platforms." : "Distributing content to all connected platforms via Botato."}
+          </p>
+        </div>
+        <div className="glass rounded-xl p-10 text-center">
+          {publishProgress < 100 ? (
+            <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} className="w-16 h-16 mx-auto mb-6">
+              <div className="w-full h-full rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}>
+                <Rocket className="w-8 h-8 text-foreground" />
+              </div>
+            </motion.div>
+          ) : (
+            <div className="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center bg-success/20">
+              <CheckCircle2 className="w-8 h-8 text-success" />
+            </div>
+          )}
+          <div className="max-w-sm mx-auto mb-4">
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
+              <motion.div className="h-full rounded-full" style={{ background: "linear-gradient(90deg, hsl(214 84% 50%), hsl(155 100% 41%))", width: `${Math.min(publishProgress, 100)}%` }} />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">{Math.round(Math.min(publishProgress, 100))}% complete</p>
+          </div>
+          <div className="space-y-2 text-xs text-muted-foreground">
+            {publishProgress > 10 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>📺 Uploading to YouTube...</motion.p>}
+            {publishProgress > 30 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>📘 Publishing to Facebook...</motion.p>}
+            {publishProgress > 50 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>📸 Posting to Instagram...</motion.p>}
+            {publishProgress > 65 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>🎵 Uploading to TikTok...</motion.p>}
+            {publishProgress > 80 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>📌 Pinning to Pinterest...</motion.p>}
+            {publishProgress > 92 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>🤖 Botato: Auto-engagement activated!</motion.p>}
+          </div>
+          {publishProgress >= 100 && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
+              <Button variant="outline" onClick={() => window.location.href = "/projects"} className="gap-2 border-border text-foreground hover:bg-muted">
+                <LayoutDashboard className="w-4 h-4" /> Go to Projects
+              </Button>
+            </motion.div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-foreground mb-1">📋 Final Review</h3>
+          <p className="text-sm text-muted-foreground">Review all generated content. Click [Edit] to return to any step.</p>
+        </div>
+        <Badge className="bg-success/10 text-success border-0 text-xs font-semibold">All Steps Complete ✓</Badge>
+      </div>
+
+      {/* Content Summary Sections */}
+      <div className="space-y-2">
+        {sections.map((section) => {
+          const isExpanded = expandedSection === section.id;
+          return (
+            <div key={section.id} className="glass rounded-xl overflow-hidden">
+              <button
+                onClick={() => setExpandedSection(isExpanded ? null : section.id)}
+                className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/20 transition-colors"
+              >
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                  {section.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-foreground">{section.label}</p>
+                    <Badge className="bg-success/10 text-success border-0 text-[10px]">Ready</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{section.summary}</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => { e.stopPropagation(); onBack(section.step); }}
+                  className="border-border text-foreground hover:bg-muted text-xs shrink-0"
+                >
+                  <Edit3 className="w-3 h-3 mr-1" /> Edit
+                </Button>
+                <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} className="text-muted-foreground">
+                  <ArrowRight className="w-4 h-4 rotate-90" />
+                </motion.div>
+              </button>
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 pb-4 pt-0 border-t border-border">
+                      <div className="bg-muted/30 rounded-lg p-3 mt-3">
+                        <p className="text-xs text-muted-foreground font-mono leading-relaxed">
+                          {section.id === "script" && "11 dialogue lines between Alina (Host) and Sergiu (Founder). Includes hook, benefits, client story, and CTA. Language: Romanian."}
+                          {section.id === "audio" && "Generated via Google Cloud TTS. Voices: ro-RO-Wavenet-A (Alina), ro-RO-Wavenet-B (Sergiu). Sample rate: 48kHz. Duration: ~180s."}
+                          {section.id === "thumbnail" && "3 variations generated via Gemini Image. Selected: Variation A (Tech Futuristic). Resolution: 1280×720. On-brand colors applied."}
+                          {section.id === "video" && "6 platform variants rendered by Kie.ai. YouTube (16:9), TikTok (9:16), Instagram Reels (9:16), LinkedIn (16:9), Facebook (16:9), Twitter (16:9). All with auto-subtitles."}
+                          {section.id === "seo" && "Platform-specific content generated: YouTube description (5000 chars), Blog post (2500 words), Social media posts (LinkedIn, Instagram, Twitter), Email newsletter template."}
+                          {section.id === "platforms" && "5 platforms connected and enabled: YouTube (immediate), Facebook (+5min), Instagram (+10min), TikTok (+15min), Pinterest (+30min). LinkedIn & Twitter pending connection."}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Botato Integration */}
+      <div className="glass rounded-xl p-5 space-y-4" style={{ borderColor: "hsl(var(--primary) / 0.3)" }}>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}>
+            🤖
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground">Botato Workflow</p>
+            <p className="text-xs text-muted-foreground">Automated cross-platform publishing & engagement</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-muted/30 rounded-lg p-3 text-center">
+            <p className="text-lg font-bold text-foreground">5</p>
+            <p className="text-[10px] text-muted-foreground">Posts Scheduled</p>
+          </div>
+          <div className="bg-muted/30 rounded-lg p-3 text-center">
+            <p className="text-lg font-bold text-success">ON</p>
+            <p className="text-[10px] text-muted-foreground">Auto-Engagement</p>
+          </div>
+          <div className="bg-muted/30 rounded-lg p-3 text-center">
+            <p className="text-lg font-bold text-primary">50K-100K</p>
+            <p className="text-[10px] text-muted-foreground">Est. Impressions</p>
+          </div>
+          <div className="bg-muted/30 rounded-lg p-3 text-center">
+            <p className="text-lg font-bold text-foreground">30min</p>
+            <p className="text-[10px] text-muted-foreground">Publish Window</p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between bg-muted/20 rounded-lg p-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span className="text-sm text-foreground">Auto-Engagement</span>
+            <span className="text-xs text-muted-foreground">(Likes, comments, shares automation)</span>
+          </div>
+          <button
+            onClick={() => setAutoEngagement(!autoEngagement)}
+            className={`w-10 h-5 rounded-full transition-colors relative ${autoEngagement ? "bg-success" : "bg-muted"}`}
+          >
+            <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-foreground transition-transform ${autoEngagement ? "left-[22px]" : "left-0.5"}`} />
+          </button>
+        </div>
+      </div>
+
+      {/* Reach Estimator */}
+      <div className="glass rounded-xl p-5">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">📊 Estimated Reach</h4>
+        <div className="space-y-2">
+          {[
+            { platform: "📺 YouTube", reach: "20K-40K views", engagement: "2.5% CTR" },
+            { platform: "📘 Facebook", reach: "10K-20K reach", engagement: "3.1% engagement" },
+            { platform: "📸 Instagram", reach: "8K-15K reach", engagement: "4.2% engagement" },
+            { platform: "🎵 TikTok", reach: "15K-30K views", engagement: "5.8% engagement" },
+            { platform: "📌 Pinterest", reach: "5K-10K impressions", engagement: "1.8% saves" },
+          ].map((item) => (
+            <div key={item.platform} className="flex items-center justify-between py-1.5">
+              <span className="text-sm text-foreground">{item.platform}</span>
+              <div className="flex items-center gap-4">
+                <span className="text-xs text-muted-foreground">{item.reach}</span>
+                <Badge variant="outline" className="border-border text-[10px]">{item.engagement}</Badge>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Final Actions */}
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          onClick={handlePublish}
+          size="lg"
+          className="gap-2 font-semibold text-foreground px-8"
+          style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+        >
+          <Rocket className="w-5 h-5" /> Publish 🚀
+        </Button>
+        <Button variant="outline" onClick={handleDraft} className="gap-2 border-border text-foreground hover:bg-muted">
+          <FileText className="w-4 h-4" /> Save as Draft
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────
    Generic Step Placeholder
    ────────────────────────────────── */
 function StepPlaceholder({ stepIndex }: { stepIndex: number }) {
@@ -1853,12 +2555,6 @@ function StepPlaceholder({ stepIndex }: { stepIndex: number }) {
   const Icon = s.icon;
   const descriptions: Record<number, string> = {
     0: "Set up your project basics and target platforms.",
-    3: "Google Cloud TTS converts your script into natural audio with distinct voices for Alina and Sergiu.",
-    4: "Gemini Image AI generates eye-catching thumbnails optimized for each platform format.",
-    5: "Kie.ai creates professional videos in 16:9 and 9:16 with captions and branding.",
-    6: "AI-optimized copy for YouTube descriptions, Instagram captions, LinkedIn posts, tweets, and more.",
-    7: "Connect your social media accounts via Botato for automated cross-platform publishing.",
-    8: "Review all generated content. Make final edits and approve each asset before publishing.",
     9: "Launch across all platforms simultaneously. Track publishing status in real-time.",
   };
 
@@ -1866,7 +2562,7 @@ function StepPlaceholder({ stepIndex }: { stepIndex: number }) {
     <div className="space-y-6">
       <div>
         <h3 className="font-heading text-xl font-bold text-foreground mb-1">{s.label}</h3>
-        <p className="text-sm text-muted-foreground">{descriptions[stepIndex]}</p>
+        <p className="text-sm text-muted-foreground">{descriptions[stepIndex] || "Coming soon."}</p>
       </div>
       <div className="glass rounded-xl p-8 text-center">
         <div className="w-14 h-14 rounded-2xl bg-primary/10 mx-auto mb-4 flex items-center justify-center">
@@ -1907,6 +2603,9 @@ export default function CreateWizard() {
       case 3: return <StepAudio form={form} onApprove={() => setCurrentStep(4)} />;
       case 4: return <StepThumbnail form={form} onApprove={() => setCurrentStep(5)} />;
       case 5: return <StepVideo form={form} onApprove={() => setCurrentStep(6)} />;
+      case 6: return <StepSeo form={form} onApprove={() => setCurrentStep(7)} />;
+      case 7: return <StepSocial form={form} onApprove={() => setCurrentStep(8)} />;
+      case 8: return <StepReview form={form} onBack={(step) => setCurrentStep(step)} />;
       default: return <StepPlaceholder stepIndex={currentStep} />;
     }
   };
@@ -1980,7 +2679,7 @@ export default function CreateWizard() {
             <ArrowLeft className="w-4 h-4" /> Back
           </Button>
           <div className="flex items-center gap-3">
-            {currentStep >= 2 && currentStep < 9 && (
+            {currentStep >= 2 && currentStep < 8 && (
               <Button
                 onClick={() => setCurrentStep(currentStep + 1)}
                 variant="outline"
@@ -1989,14 +2688,16 @@ export default function CreateWizard() {
                 <Check className="w-4 h-4" /> Approve & Next
               </Button>
             )}
-            <Button
-              onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
-              disabled={currentStep === steps.length - 1}
-              className="gap-2 font-semibold text-foreground"
-              style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
-            >
-              {currentStep === 9 ? "🚀 Publish" : "Next"} <ArrowRight className="w-4 h-4" />
-            </Button>
+            {currentStep < 8 && (
+              <Button
+                onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
+                disabled={currentStep === steps.length - 1}
+                className="gap-2 font-semibold text-foreground"
+                style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+              >
+                Next <ArrowRight className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
