@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { activityLogService } from "./activityLog";
 
 interface Workflow {
   name: string;
@@ -33,11 +34,32 @@ interface AnalyticsResponse {
 }
 
 async function invokeBotato<T>(payload: Record<string, unknown>): Promise<T> {
+  const start = Date.now();
   const { data, error } = await supabase.functions.invoke('botato', {
     body: payload,
   });
-  if (error) throw new Error(`Botato service error: ${error.message}`);
-  if (!data?.success) throw new Error(data?.error || 'Botato request failed');
+  const duration = Date.now() - start;
+
+  if (error) {
+    activityLogService.log({
+      type: 'publishing', status: 'error', title: `Botato ${payload.action} Failed`,
+      description: error.message, metadata: { api: 'botato', action: payload.action, duration },
+    });
+    throw new Error(`Botato service error: ${error.message}`);
+  }
+  if (!data?.success) {
+    const errMsg = data?.error || 'Botato request failed';
+    activityLogService.log({
+      type: 'publishing', status: 'error', title: `Botato ${payload.action} Failed`,
+      description: errMsg, metadata: { api: 'botato', action: payload.action, duration },
+    });
+    throw new Error(errMsg);
+  }
+
+  activityLogService.log({
+    type: 'publishing', status: 'success', title: `Botato ${payload.action} Success`,
+    description: `Completed in ${duration}ms`, metadata: { api: 'botato', action: payload.action, duration },
+  });
   return data.data as T;
 }
 

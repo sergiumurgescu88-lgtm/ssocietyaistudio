@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { activityLogService } from "./activityLog";
 
 interface VideoOptions {
   tool?: 'kie-text-to-video' | 'kie-image-to-video' | 'kie-edit' | 'kie-merge';
@@ -15,11 +16,32 @@ interface VideoResponse {
 }
 
 async function invokeKie<T>(payload: Record<string, unknown>): Promise<T> {
+  const start = Date.now();
   const { data, error } = await supabase.functions.invoke('kie', {
     body: payload,
   });
-  if (error) throw new Error(`Kie service error: ${error.message}`);
-  if (!data?.success) throw new Error(data?.error || 'Kie request failed');
+  const duration = Date.now() - start;
+
+  if (error) {
+    activityLogService.log({
+      type: 'generation', status: 'error', title: `Kie ${payload.action} Failed`,
+      description: error.message, metadata: { api: 'kie.ai', action: payload.action, duration },
+    });
+    throw new Error(`Kie service error: ${error.message}`);
+  }
+  if (!data?.success) {
+    const errMsg = data?.error || 'Kie request failed';
+    activityLogService.log({
+      type: 'generation', status: 'error', title: `Kie ${payload.action} Failed`,
+      description: errMsg, metadata: { api: 'kie.ai', action: payload.action, duration },
+    });
+    throw new Error(errMsg);
+  }
+
+  activityLogService.log({
+    type: 'generation', status: 'success', title: `Kie ${payload.action} Success`,
+    description: `Completed in ${duration}ms`, metadata: { api: 'kie.ai', action: payload.action, duration },
+  });
   return data.data as T;
 }
 
