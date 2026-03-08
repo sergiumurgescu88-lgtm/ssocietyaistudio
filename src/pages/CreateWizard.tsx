@@ -665,6 +665,481 @@ function StepScript({
 }
 
 /* ──────────────────────────────────
+   STEP 3: Audio Generation
+   ────────────────────────────────── */
+
+function StepAudio({ form, onApprove }: { form: ToolFormData; onApprove: () => void }) {
+  const { toast } = useToast();
+  const [state, setState] = useState<"idle" | "loading" | "done">("idle");
+  const [progress, setProgress] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [muted, setMuted] = useState(false);
+  const [volume, setVolume] = useState([80]);
+  const [locked, setLocked] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [voiceSettings, setVoiceSettings] = useState({
+    alinaVoice: "ro-RO-Wavenet-A",
+    sergiuVoice: "ro-RO-Wavenet-B",
+    speed: [1.0],
+    pitch: [0],
+    sampleRate: "48000",
+  });
+
+  const duration = parseInt(form.videoDuration) || 180;
+  const playIntervalRef = useRef<ReturnType<typeof setInterval>>();
+
+  const generate = () => {
+    setState("loading");
+    setProgress(0);
+    const interval = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 100) { clearInterval(interval); setState("done"); return 100; }
+        return p + Math.random() * 2 + 0.8;
+      });
+    }, 400);
+  };
+
+  const togglePlay = () => {
+    if (playing) {
+      clearInterval(playIntervalRef.current);
+      setPlaying(false);
+    } else {
+      setPlaying(true);
+      playIntervalRef.current = setInterval(() => {
+        setCurrentTime((t) => {
+          if (t >= duration) {
+            clearInterval(playIntervalRef.current);
+            setPlaying(false);
+            return 0;
+          }
+          return t + 1;
+        });
+      }, 1000);
+    }
+  };
+
+  useEffect(() => {
+    return () => { if (playIntervalRef.current) clearInterval(playIntervalRef.current); };
+  }, []);
+
+  const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+
+  const handleApprove = () => {
+    setLocked(true);
+    setPlaying(false);
+    if (playIntervalRef.current) clearInterval(playIntervalRef.current);
+    toast({ title: "Audio Approved ✓", description: "Locked. Proceeding to thumbnail generation." });
+    setTimeout(onApprove, 600);
+  };
+
+  const handleUpload = () => {
+    toast({ title: "Upload Custom Audio", description: "File picker would open here. Supported: WAV, MP3, M4A." });
+  };
+
+  // Generate mock waveform bars
+  const waveformBars = useRef(
+    Array.from({ length: 80 }, () => 0.15 + Math.random() * 0.85)
+  ).current;
+
+  if (state === "idle") {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-foreground mb-1">Audio Generation</h3>
+          <p className="text-sm text-muted-foreground">Google Cloud TTS converts your approved script into natural-sounding audio.</p>
+        </div>
+
+        <div className="glass rounded-xl p-8 text-center">
+          <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}>
+            <Headphones className="w-8 h-8 text-foreground" />
+          </div>
+          <h4 className="font-heading font-bold text-foreground text-lg mb-2">Generate with Google Cloud TTS</h4>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto mb-5">
+            Two distinct voices for Alina (host) and Sergiu (founder) in Romanian, optimized for podcast quality.
+          </p>
+
+          <div className="glass rounded-lg p-4 max-w-sm mx-auto mb-6 text-left space-y-2">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">TTS Configuration</p>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="flex justify-between"><span className="text-muted-foreground">Language</span><span className="text-foreground font-medium">ro-RO</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Encoding</span><span className="text-foreground font-medium">LINEAR16</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Sample Rate</span><span className="text-foreground font-medium">48kHz</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Duration</span><span className="text-foreground font-medium">~{form.videoDuration}s</span></div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+            <Badge variant="outline" className="border-border text-xs">🎙️ Wavenet Voices</Badge>
+            <Badge variant="outline" className="border-border text-xs">🇷🇴 Romanian</Badge>
+            <Badge variant="outline" className="border-border text-xs">🎵 48kHz Studio</Badge>
+          </div>
+
+          <div className="flex items-center justify-center gap-3">
+            <Button
+              onClick={generate}
+              size="lg"
+              className="gap-2 font-semibold text-foreground px-8"
+              style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+            >
+              <Sparkles className="w-5 h-5" /> Generate Audio
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleUpload}
+              className="gap-2 border-border text-foreground hover:bg-muted"
+            >
+              <Upload className="w-4 h-4" /> Upload Custom
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (state === "loading") {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-foreground mb-1">Generating Audio...</h3>
+          <p className="text-sm text-muted-foreground">Google Cloud TTS is synthesizing your podcast audio. This may take 30-60 seconds.</p>
+        </div>
+
+        <div className="glass rounded-xl p-10 text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            className="w-16 h-16 mx-auto mb-6"
+          >
+            <div className="w-full h-full rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}>
+              <Headphones className="w-8 h-8 text-foreground" />
+            </div>
+          </motion.div>
+
+          <div className="max-w-sm mx-auto mb-4">
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
+              <motion.div
+                className="h-full rounded-full"
+                style={{ background: "linear-gradient(90deg, hsl(214 84% 50%), hsl(155 100% 41%))", width: `${Math.min(progress, 100)}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">{Math.round(Math.min(progress, 100))}% complete</p>
+          </div>
+
+          <div className="space-y-2 text-xs text-muted-foreground">
+            {progress > 10 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>🔊 Initializing voice models...</motion.p>}
+            {progress > 30 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>🎙️ Synthesizing Alina's voice (ro-RO-Wavenet-A)...</motion.p>}
+            {progress > 55 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>🎤 Synthesizing Sergiu's voice (ro-RO-Wavenet-B)...</motion.p>}
+            {progress > 75 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>🎵 Mixing & mastering audio tracks...</motion.p>}
+            {progress > 90 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>✨ Final quality check...</motion.p>}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Done state — audio player
+  const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-foreground mb-1">
+            {locked ? "🔒 Audio Approved" : "🎧 Audio Preview"}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {locked ? "Audio is locked. Proceeding to thumbnail." : "Listen, adjust, or upload your own audio."}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="border-border text-xs">🎵 48kHz</Badge>
+          <Badge variant="outline" className="border-border text-xs">⏱️ {formatTime(duration)}</Badge>
+          <Badge className="bg-success/10 text-success border-0 text-xs font-semibold">Generated ✓</Badge>
+        </div>
+      </div>
+
+      {/* Waveform Player */}
+      <div className="glass rounded-xl overflow-hidden">
+        {/* Waveform visualization */}
+        <div
+          className="px-5 pt-5 pb-2 cursor-pointer"
+          onClick={(e) => {
+            if (locked) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const pct = (e.clientX - rect.left) / rect.width;
+            setCurrentTime(Math.round(pct * duration));
+          }}
+        >
+          <div className="flex items-end gap-[2px] h-20 relative">
+            {waveformBars.map((h, i) => {
+              const barPct = (i / waveformBars.length) * 100;
+              const isPast = barPct <= progressPct;
+              const isCurrent = Math.abs(barPct - progressPct) < 2;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ scaleY: 0 }}
+                  animate={{
+                    scaleY: playing && isCurrent ? [h, h * 0.6, h] : h,
+                  }}
+                  transition={playing && isCurrent ? { duration: 0.4, repeat: Infinity } : { duration: 0.3, delay: i * 0.005 }}
+                  className="flex-1 rounded-full origin-bottom transition-colors duration-150"
+                  style={{
+                    height: "100%",
+                    background: isPast
+                      ? "linear-gradient(to top, hsl(214 84% 50%), hsl(155 100% 50%))"
+                      : "hsl(232, 25%, 28%)",
+                  }}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="px-5 pb-5 pt-2">
+          {/* Time display */}
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-3 font-mono">
+            <span>{formatTime(currentTime)}</span>
+            <span>{formatTime(duration)}</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Playback controls */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentTime(Math.max(0, currentTime - 10))}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                disabled={locked}
+              >
+                <SkipBack className="w-4 h-4" />
+              </button>
+              <button
+                onClick={togglePlay}
+                disabled={locked}
+                className="w-11 h-11 rounded-full flex items-center justify-center text-foreground transition-all hover:brightness-110"
+                style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+              >
+                {playing ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
+              </button>
+              <button
+                onClick={() => setCurrentTime(Math.min(duration, currentTime + 10))}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                disabled={locked}
+              >
+                <SkipForward className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Volume */}
+            <div className="flex items-center gap-2 ml-2">
+              <button
+                onClick={() => setMuted(!muted)}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
+              <Slider
+                value={muted ? [0] : volume}
+                onValueChange={(v) => { setVolume(v); if (muted) setMuted(false); }}
+                max={100}
+                step={1}
+                className="w-20"
+              />
+            </div>
+
+            {/* Speaker indicators */}
+            <div className="flex items-center gap-3 ml-auto text-xs">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-primary" />
+                <span className="text-muted-foreground">Alina</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-success" />
+                <span className="text-muted-foreground">Sergiu</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Voice Settings Preview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="glass rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Mic2 className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">Alina (Host)</p>
+              <p className="text-[10px] text-muted-foreground">{voiceSettings.alinaVoice}</p>
+            </div>
+          </div>
+          <div className="space-y-1.5 text-xs">
+            <div className="flex justify-between text-muted-foreground"><span>Speed</span><span className="text-foreground">{voiceSettings.speed[0]}x</span></div>
+            <div className="flex justify-between text-muted-foreground"><span>Pitch</span><span className="text-foreground">{voiceSettings.pitch[0] > 0 ? "+" : ""}{voiceSettings.pitch[0]}</span></div>
+            <div className="flex justify-between text-muted-foreground"><span>Sample Rate</span><span className="text-foreground">{voiceSettings.sampleRate}Hz</span></div>
+          </div>
+        </div>
+        <div className="glass rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
+              <Mic2 className="w-4 h-4 text-success" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">Sergiu (Founder)</p>
+              <p className="text-[10px] text-muted-foreground">{voiceSettings.sergiuVoice}</p>
+            </div>
+          </div>
+          <div className="space-y-1.5 text-xs">
+            <div className="flex justify-between text-muted-foreground"><span>Speed</span><span className="text-foreground">{voiceSettings.speed[0]}x</span></div>
+            <div className="flex justify-between text-muted-foreground"><span>Pitch</span><span className="text-foreground">{voiceSettings.pitch[0] > 0 ? "+" : ""}{voiceSettings.pitch[0]}</span></div>
+            <div className="flex justify-between text-muted-foreground"><span>Sample Rate</span><span className="text-foreground">{voiceSettings.sampleRate}Hz</span></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      {!locked && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            onClick={handleApprove}
+            className="gap-2 font-semibold text-foreground"
+            style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+          >
+            <Lock className="w-4 h-4" /> Approve & Continue
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setSettingsOpen(true)}
+            className="gap-1.5 border-border text-foreground hover:bg-muted"
+          >
+            <Settings2 className="w-4 h-4" /> Adjust Voice
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleUpload}
+            className="gap-1.5 border-border text-foreground hover:bg-muted"
+          >
+            <Upload className="w-4 h-4" /> Upload Custom
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => { setState("loading"); setProgress(0); setCurrentTime(0); setPlaying(false); generate(); }}
+            className="gap-1.5 border-border text-foreground hover:bg-muted"
+          >
+            <RefreshCw className="w-4 h-4" /> Regenerate
+          </Button>
+        </div>
+      )}
+
+      {/* Voice Settings Dialog */}
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent className="bg-card border-border max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-foreground">Voice Settings</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 py-2">
+            {/* Alina Voice */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-primary" /> Alina (Host)
+              </p>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Voice Model</label>
+                <select
+                  value={voiceSettings.alinaVoice}
+                  onChange={(e) => setVoiceSettings((s) => ({ ...s, alinaVoice: e.target.value }))}
+                  className="w-full h-10 rounded-lg bg-muted border border-border px-3 text-sm text-foreground"
+                >
+                  <option value="ro-RO-Wavenet-A">ro-RO-Wavenet-A (Female, Warm)</option>
+                  <option value="ro-RO-Wavenet-C">ro-RO-Wavenet-C (Female, Bright)</option>
+                  <option value="ro-RO-Standard-A">ro-RO-Standard-A (Female, Standard)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Sergiu Voice */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-success" /> Sergiu (Founder)
+              </p>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Voice Model</label>
+                <select
+                  value={voiceSettings.sergiuVoice}
+                  onChange={(e) => setVoiceSettings((s) => ({ ...s, sergiuVoice: e.target.value }))}
+                  className="w-full h-10 rounded-lg bg-muted border border-border px-3 text-sm text-foreground"
+                >
+                  <option value="ro-RO-Wavenet-B">ro-RO-Wavenet-B (Male, Deep)</option>
+                  <option value="ro-RO-Wavenet-D">ro-RO-Wavenet-D (Male, Bright)</option>
+                  <option value="ro-RO-Standard-B">ro-RO-Standard-B (Male, Standard)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Shared Settings */}
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs text-muted-foreground">Speed</label>
+                  <span className="text-xs text-foreground font-medium">{voiceSettings.speed[0]}x</span>
+                </div>
+                <Slider
+                  value={voiceSettings.speed}
+                  onValueChange={(v) => setVoiceSettings((s) => ({ ...s, speed: v }))}
+                  min={0.5}
+                  max={2.0}
+                  step={0.1}
+                />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs text-muted-foreground">Pitch</label>
+                  <span className="text-xs text-foreground font-medium">{voiceSettings.pitch[0] > 0 ? "+" : ""}{voiceSettings.pitch[0]}</span>
+                </div>
+                <Slider
+                  value={voiceSettings.pitch}
+                  onValueChange={(v) => setVoiceSettings((s) => ({ ...s, pitch: v }))}
+                  min={-5}
+                  max={5}
+                  step={0.5}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Sample Rate</label>
+                <select
+                  value={voiceSettings.sampleRate}
+                  onChange={(e) => setVoiceSettings((s) => ({ ...s, sampleRate: e.target.value }))}
+                  className="w-full h-10 rounded-lg bg-muted border border-border px-3 text-sm text-foreground"
+                >
+                  <option value="24000">24kHz (Standard)</option>
+                  <option value="48000">48kHz (Studio Quality)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSettingsOpen(false)} className="border-border text-foreground hover:bg-muted">Cancel</Button>
+            <Button
+              onClick={() => {
+                setSettingsOpen(false);
+                toast({ title: "Settings Updated", description: "Voice settings saved. Regenerate to apply." });
+              }}
+              className="gap-2 text-foreground font-semibold"
+              style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+            >
+              <Check className="w-4 h-4" /> Save Settings
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────
    Generic Step Placeholder
    ────────────────────────────────── */
 function StepPlaceholder({ stepIndex }: { stepIndex: number }) {
