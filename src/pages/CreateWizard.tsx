@@ -1406,6 +1406,446 @@ function StepThumbnail({ form, onApprove }: { form: ToolFormData; onApprove: () 
 }
 
 /* ──────────────────────────────────
+   STEP 5: Video Generation (Kie.ai)
+   ────────────────────────────────── */
+
+import videoPreviewLandscape from "@/assets/video-preview-landscape.jpg";
+import videoPreviewPortrait from "@/assets/video-preview-portrait.jpg";
+
+interface VideoVariant {
+  id: string;
+  platform: string;
+  aspect: string;
+  resolution: string;
+  preview: string;
+  icon: string;
+}
+
+const videoVariants: VideoVariant[] = [
+  { id: "yt", platform: "YouTube", aspect: "16:9", resolution: "1920×1080", preview: videoPreviewLandscape, icon: "▶️" },
+  { id: "tt", platform: "TikTok", aspect: "9:16", resolution: "1080×1920", preview: videoPreviewPortrait, icon: "🎵" },
+  { id: "ig", platform: "Instagram Reels", aspect: "9:16", resolution: "1080×1920", preview: videoPreviewPortrait, icon: "📸" },
+  { id: "li", platform: "LinkedIn", aspect: "16:9", resolution: "1920×1080", preview: videoPreviewLandscape, icon: "💼" },
+  { id: "fb", platform: "Facebook", aspect: "16:9", resolution: "1920×1080", preview: videoPreviewLandscape, icon: "👥" },
+  { id: "tw", platform: "Twitter/X", aspect: "16:9", resolution: "1920×1080", preview: videoPreviewLandscape, icon: "🐦" },
+];
+
+const kieTools = [
+  { value: "text-to-video", label: "Text to Video" },
+  { value: "image-to-video", label: "Image to Video" },
+  { value: "audio-to-video", label: "Audio to Video (Sync)" },
+  { value: "template-video", label: "Template Based" },
+];
+
+interface SceneData {
+  id: number;
+  label: string;
+  duration: string;
+  description: string;
+  selected: boolean;
+}
+
+function StepVideo({ form, onApprove }: { form: ToolFormData; onApprove: () => void }) {
+  const { toast } = useToast();
+  const [state, setState] = useState<"idle" | "loading" | "done">("idle");
+  const [progress, setProgress] = useState(0);
+  const [locked, setLocked] = useState(false);
+  const [kieTool, setKieTool] = useState("audio-to-video");
+  const [activeVariant, setActiveVariant] = useState("yt");
+  const [playing, setPlaying] = useState(false);
+  const [videoTime, setVideoTime] = useState(0);
+  const [subtitlesOn, setSubtitlesOn] = useState(true);
+  const [scenesOpen, setScenesOpen] = useState(false);
+  const playRef = useRef<ReturnType<typeof setInterval>>();
+
+  const duration = parseInt(form.videoDuration) || 180;
+  const currentVariant = videoVariants.find((v) => v.id === activeVariant)!;
+
+  const [scenes, setScenes] = useState<SceneData[]>([
+    { id: 1, label: "Intro Hook", duration: "0:00 – 0:15", description: "Alina introduces the episode with an engaging hook", selected: false },
+    { id: 2, label: "Product Overview", duration: "0:15 – 0:45", description: "Sergiu explains what the tool does", selected: false },
+    { id: 3, label: "Key Features", duration: "0:45 – 1:30", description: "Deep dive into top 3 features with visuals", selected: false },
+    { id: 4, label: "Client Story", duration: "1:30 – 2:15", description: "Real-world use case and results", selected: false },
+    { id: 5, label: "Benefits Recap", duration: "2:15 – 2:45", description: "Summary of 3 main benefits", selected: false },
+    { id: 6, label: "CTA & Outro", duration: "2:45 – 3:00", description: "Call to action and closing", selected: false },
+  ]);
+
+  const generate = () => {
+    setState("loading");
+    setProgress(0);
+    const interval = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 100) { clearInterval(interval); setState("done"); return 100; }
+        return p + Math.random() * 1.5 + 0.5;
+      });
+    }, 500);
+  };
+
+  const togglePlay = () => {
+    if (playing) {
+      clearInterval(playRef.current);
+      setPlaying(false);
+    } else {
+      setPlaying(true);
+      playRef.current = setInterval(() => {
+        setVideoTime((t) => {
+          if (t >= duration) { clearInterval(playRef.current); setPlaying(false); return 0; }
+          return t + 1;
+        });
+      }, 1000);
+    }
+  };
+
+  useEffect(() => {
+    return () => { if (playRef.current) clearInterval(playRef.current); };
+  }, []);
+
+  const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+  const progressPct = duration > 0 ? (videoTime / duration) * 100 : 0;
+
+  const handleApprove = () => {
+    setLocked(true);
+    setPlaying(false);
+    if (playRef.current) clearInterval(playRef.current);
+    toast({ title: "Videos Approved ✓", description: "All variants locked. Proceeding to SEO content." });
+    setTimeout(onApprove, 600);
+  };
+
+  const handleDownloadAll = () => {
+    toast({ title: "Downloading...", description: `Preparing ${videoVariants.length} video files for download.` });
+  };
+
+  // Idle
+  if (state === "idle") {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-foreground mb-1">Video Generation</h3>
+          <p className="text-sm text-muted-foreground">Kie.ai creates professional videos for every platform from your script and audio.</p>
+        </div>
+
+        <div className="glass rounded-xl p-8 text-center">
+          <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}>
+            <Video className="w-8 h-8 text-foreground" />
+          </div>
+          <h4 className="font-heading font-bold text-foreground text-lg mb-2">Generate with Kie.ai</h4>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto mb-5">
+            {videoVariants.length} platform variants for <span className="text-foreground font-medium">{form.toolName || "your tool"}</span> — auto-synced with your approved audio and thumbnails.
+          </p>
+
+          {/* Kie.ai Tool Selector */}
+          <div className="max-w-sm mx-auto mb-6">
+            <label className="text-xs text-muted-foreground mb-1.5 block text-left">Kie.ai Tool</label>
+            <select
+              value={kieTool}
+              onChange={(e) => setKieTool(e.target.value)}
+              className="w-full h-11 rounded-lg bg-muted border border-border px-3 text-sm text-foreground focus:ring-2 focus:ring-primary/50 outline-none"
+            >
+              {kieTools.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+            </select>
+          </div>
+
+          {/* Config preview */}
+          <div className="glass rounded-lg p-4 max-w-md mx-auto mb-6 text-left space-y-2">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Kie.ai Configuration</p>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="flex justify-between"><span className="text-muted-foreground">Tool</span><span className="text-foreground font-medium">{kieTools.find((t) => t.value === kieTool)?.label}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Format</span><span className="text-foreground font-medium">MP4</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Resolution</span><span className="text-foreground font-medium">1080p</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">FPS</span><span className="text-foreground font-medium">30</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Duration</span><span className="text-foreground font-medium">{form.videoDuration}s</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Variants</span><span className="text-foreground font-medium">{videoVariants.length} platforms</span></div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+            {videoVariants.map((v) => (
+              <Badge key={v.id} variant="outline" className="border-border text-xs">{v.icon} {v.platform}</Badge>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-center gap-3">
+            <Button
+              onClick={generate}
+              size="lg"
+              className="gap-2 font-semibold text-foreground px-8"
+              style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+            >
+              <Sparkles className="w-5 h-5" /> Generate All Videos
+            </Button>
+            <Button variant="outline" onClick={() => toast({ title: "Upload Custom", description: "File picker: MP4, MOV, WebM supported." })} className="gap-2 border-border text-foreground hover:bg-muted">
+              <Upload className="w-4 h-4" /> Upload Custom
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading
+  if (state === "loading") {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-foreground mb-1">Generating Videos...</h3>
+          <p className="text-sm text-muted-foreground">Kie.ai is rendering {videoVariants.length} platform variants. This may take 1-3 minutes.</p>
+        </div>
+        <div className="glass rounded-xl p-10 text-center">
+          <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} className="w-16 h-16 mx-auto mb-6">
+            <div className="w-full h-full rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}>
+              <Video className="w-8 h-8 text-foreground" />
+            </div>
+          </motion.div>
+          <div className="max-w-sm mx-auto mb-4">
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
+              <motion.div className="h-full rounded-full" style={{ background: "linear-gradient(90deg, hsl(214 84% 50%), hsl(155 100% 41%))", width: `${Math.min(progress, 100)}%` }} />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">{Math.round(Math.min(progress, 100))}% complete</p>
+          </div>
+          <div className="space-y-2 text-xs text-muted-foreground">
+            {progress > 5 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>🎬 Syncing audio with script timeline...</motion.p>}
+            {progress > 20 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>🖼️ Compositing scenes with thumbnails...</motion.p>}
+            {progress > 40 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>▶️ Rendering YouTube (16:9)...</motion.p>}
+            {progress > 55 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>🎵 Rendering TikTok (9:16)...</motion.p>}
+            {progress > 70 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>📸 Rendering Instagram Reels (9:16)...</motion.p>}
+            {progress > 82 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>💼 Rendering LinkedIn, Facebook, Twitter...</motion.p>}
+            {progress > 92 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>📝 Generating auto-subtitles...</motion.p>}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Done — Video player + variants + scenes
+  const isPortrait = currentVariant.aspect === "9:16";
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-foreground mb-1">
+            {locked ? "🔒 Videos Approved" : "🎬 Video Preview"}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {locked ? "All variants locked. Proceeding to SEO." : `${videoVariants.length} platform variants generated. Select to preview.`}
+          </p>
+        </div>
+        <Badge className="bg-success/10 text-success border-0 text-xs font-semibold">{videoVariants.length} Variants Generated ✓</Badge>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Video Player — takes 2 cols */}
+        <div className="lg:col-span-2 glass rounded-xl overflow-hidden">
+          {/* Video area */}
+          <div className={`relative bg-background/50 flex items-center justify-center overflow-hidden ${isPortrait ? "max-h-[420px]" : ""}`}>
+            <img
+              src={currentVariant.preview}
+              alt={currentVariant.platform}
+              className={`object-cover ${isPortrait ? "h-[400px] w-auto" : "w-full aspect-video"}`}
+            />
+            {/* Play overlay */}
+            {!playing && (
+              <button
+                onClick={togglePlay}
+                disabled={locked}
+                className="absolute inset-0 flex items-center justify-center bg-background/30 transition-opacity hover:bg-background/20"
+              >
+                <div className="w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-sm" style={{ background: "linear-gradient(135deg, hsl(214 84% 50% / 0.9), hsl(155 100% 41% / 0.9))" }}>
+                  <Play className="w-7 h-7 text-foreground ml-1" />
+                </div>
+              </button>
+            )}
+            {/* Subtitle overlay */}
+            {subtitlesOn && playing && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-sm rounded-lg px-4 py-2 max-w-[80%]">
+                <p className="text-sm text-foreground text-center">
+                  {videoTime < 15 ? "Bună tuturor și bine ați revenit la S Society Tech Talk!" :
+                   videoTime < 45 ? "Astăzi vorbim despre un tool AI incredibil..." :
+                   videoTime < 90 ? "Am construit o platformă de automatizare a conținutului..." :
+                   "Folosim Gemini 2.5 Pro pentru generarea de conținut..."}
+                </p>
+              </div>
+            )}
+            {/* Platform badge */}
+            <div className="absolute top-3 left-3 bg-background/70 backdrop-blur-sm rounded-lg px-2.5 py-1 text-xs font-medium text-foreground">
+              {currentVariant.icon} {currentVariant.platform} • {currentVariant.aspect}
+            </div>
+          </div>
+
+          {/* Player controls */}
+          <div className="px-4 py-3 border-t border-border">
+            {/* Progress bar */}
+            <div
+              className="h-1.5 rounded-full bg-muted mb-3 cursor-pointer overflow-hidden"
+              onClick={(e) => {
+                if (locked) return;
+                const pct = (e.clientX - e.currentTarget.getBoundingClientRect().left) / e.currentTarget.offsetWidth;
+                setVideoTime(Math.round(pct * duration));
+              }}
+            >
+              <div className="h-full rounded-full transition-all" style={{ background: "linear-gradient(90deg, hsl(214 84% 50%), hsl(155 100% 41%))", width: `${progressPct}%` }} />
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <button onClick={() => setVideoTime(Math.max(0, videoTime - 10))} disabled={locked} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                  <SkipBack className="w-4 h-4" />
+                </button>
+                <button onClick={togglePlay} disabled={locked} className="w-10 h-10 rounded-full flex items-center justify-center text-foreground" style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}>
+                  {playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+                </button>
+                <button onClick={() => setVideoTime(Math.min(duration, videoTime + 10))} disabled={locked} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                  <SkipForward className="w-4 h-4" />
+                </button>
+                <span className="text-xs text-muted-foreground font-mono ml-1">{formatTime(videoTime)} / {formatTime(duration)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setSubtitlesOn(!subtitlesOn)}
+                  className={`text-xs px-2 py-1 rounded transition-colors ${subtitlesOn ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  CC
+                </button>
+                <span className="text-[10px] text-muted-foreground">{currentVariant.resolution} • 30fps</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Platform variants sidebar */}
+        <div className="space-y-4">
+          <div className="glass rounded-xl p-4">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Platform Variants</h4>
+            <div className="space-y-2">
+              {videoVariants.map((v) => {
+                const active = activeVariant === v.id;
+                return (
+                  <button
+                    key={v.id}
+                    onClick={() => { setActiveVariant(v.id); setVideoTime(0); setPlaying(false); if (playRef.current) clearInterval(playRef.current); }}
+                    className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all duration-200 text-left ${
+                      active ? "bg-primary/10 ring-1 ring-primary" : "hover:bg-muted/50"
+                    }`}
+                  >
+                    <div className="w-12 h-8 rounded overflow-hidden shrink-0">
+                      <img src={v.preview} alt={v.platform} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{v.icon} {v.platform}</p>
+                      <p className="text-[10px] text-muted-foreground">{v.aspect} • {v.resolution}</p>
+                    </div>
+                    {active && <Check className="w-4 h-4 text-primary shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Scene editor toggle */}
+          <button
+            onClick={() => setScenesOpen(!scenesOpen)}
+            className="w-full glass rounded-xl p-4 text-left hover:bg-muted/30 transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Scene Editor</span>
+              </div>
+              <span className="text-xs text-muted-foreground">{scenes.length} scenes</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Scene Editor Panel */}
+      <AnimatePresence>
+        {scenesOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="glass rounded-xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-heading font-bold text-foreground text-sm">Scene Editor</h4>
+                <p className="text-xs text-muted-foreground">Select scenes to regenerate</p>
+              </div>
+              <div className="space-y-2">
+                {scenes.map((scene) => (
+                  <div
+                    key={scene.id}
+                    onClick={() => !locked && setScenes((s) => s.map((sc) => sc.id === scene.id ? { ...sc, selected: !sc.selected } : sc))}
+                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                      scene.selected ? "bg-primary/10 ring-1 ring-primary/30" : "bg-muted/20 hover:bg-muted/40"
+                    }`}
+                  >
+                    <div className={`w-6 h-6 rounded flex items-center justify-center shrink-0 transition-colors ${
+                      scene.selected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    }`}>
+                      {scene.selected ? <Check className="w-3.5 h-3.5" /> : <span className="text-xs">{scene.id}</span>}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-foreground">{scene.label}</p>
+                        <span className="text-[10px] text-muted-foreground font-mono">{scene.duration}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{scene.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {scenes.some((s) => s.selected) && !locked && (
+                <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border">
+                  <Button
+                    onClick={() => {
+                      toast({ title: "Regenerating Scenes", description: `${scenes.filter((s) => s.selected).length} scene(s) will be regenerated.` });
+                      setScenes((s) => s.map((sc) => ({ ...sc, selected: false })));
+                    }}
+                    size="sm"
+                    className="gap-1.5 text-foreground font-semibold"
+                    style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" /> Regenerate Selected
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setScenes((s) => s.map((sc) => ({ ...sc, selected: false })))} className="border-border text-foreground hover:bg-muted">
+                    Clear Selection
+                  </Button>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Actions */}
+      {!locked && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            onClick={handleApprove}
+            className="gap-2 font-semibold text-foreground"
+            style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+          >
+            <Lock className="w-4 h-4" /> Approve & Continue
+          </Button>
+          <Button variant="outline" onClick={() => setScenesOpen(true)} className="gap-1.5 border-border text-foreground hover:bg-muted">
+            <Edit3 className="w-4 h-4" /> Adjust Scenes
+          </Button>
+          <Button variant="outline" onClick={() => toast({ title: "Upload Custom", description: "File picker: MP4, MOV, WebM supported." })} className="gap-1.5 border-border text-foreground hover:bg-muted">
+            <Upload className="w-4 h-4" /> Upload Custom
+          </Button>
+          <Button variant="outline" onClick={generate} className="gap-1.5 border-border text-foreground hover:bg-muted">
+            <RefreshCw className="w-4 h-4" /> Regenerate All
+          </Button>
+          <Button variant="outline" onClick={handleDownloadAll} className="gap-1.5 border-border text-foreground hover:bg-muted ml-auto">
+            <ArrowRight className="w-4 h-4 rotate-90" /> Download All
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ──────────────────────────────────
    Generic Step Placeholder
    ────────────────────────────────── */
 function StepPlaceholder({ stepIndex }: { stepIndex: number }) {
@@ -1466,6 +1906,7 @@ export default function CreateWizard() {
       case 2: return <StepScript form={form} onApprove={() => setCurrentStep(3)} />;
       case 3: return <StepAudio form={form} onApprove={() => setCurrentStep(4)} />;
       case 4: return <StepThumbnail form={form} onApprove={() => setCurrentStep(5)} />;
+      case 5: return <StepVideo form={form} onApprove={() => setCurrentStep(6)} />;
       default: return <StepPlaceholder stepIndex={currentStep} />;
     }
   };
