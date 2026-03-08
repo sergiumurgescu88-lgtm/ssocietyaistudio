@@ -23,7 +23,7 @@ interface ProjectState {
     audio: AssetState & { url: string };
     thumbnail: AssetState & { url: string };
     video: AssetState & { url: string };
-    seoContent: AssetState & { content: unknown };
+    seoContent: { content: unknown; status: 'pending' | 'generating' | 'ready' | 'failed'; approved: boolean };
   };
   setCurrentStep: (step: number) => void;
   setProjectData: (data: ProjectState['projectData']) => void;
