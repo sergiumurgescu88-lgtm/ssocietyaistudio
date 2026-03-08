@@ -1140,6 +1140,272 @@ function StepAudio({ form, onApprove }: { form: ToolFormData; onApprove: () => v
 }
 
 /* ──────────────────────────────────
+   STEP 4: Thumbnail Generation
+   ────────────────────────────────── */
+
+import thumbVar1 from "@/assets/thumb-variation-1.jpg";
+import thumbVar2 from "@/assets/thumb-variation-2.jpg";
+import thumbVar3 from "@/assets/thumb-variation-3.jpg";
+
+const thumbnailVariations = [
+  { id: 1, src: thumbVar1, label: "Variation A — AI Content Factory", style: "Tech Futuristic" },
+  { id: 2, src: thumbVar2, label: "Variation B — Tech Talk Podcast", style: "Podcast Themed" },
+  { id: 3, src: thumbVar3, label: "Variation C — Automate Content", style: "Bold Headline" },
+];
+
+function StepThumbnail({ form, onApprove }: { form: ToolFormData; onApprove: () => void }) {
+  const { toast } = useToast();
+  const [state, setState] = useState<"idle" | "loading" | "done">("idle");
+  const [progress, setProgress] = useState(0);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const [locked, setLocked] = useState(false);
+  const [refineOpen, setRefineOpen] = useState(false);
+  const [refineText, setRefineText] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewSrc, setPreviewSrc] = useState("");
+
+  const generate = () => {
+    setState("loading");
+    setProgress(0);
+    setSelected(null);
+    const interval = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 100) { clearInterval(interval); setState("done"); return 100; }
+        return p + Math.random() * 3 + 1.5;
+      });
+    }, 350);
+  };
+
+  const handleApprove = () => {
+    if (selected === null) {
+      toast({ title: "Select a thumbnail", description: "Please select one of the variations first.", variant: "destructive" });
+      return;
+    }
+    setLocked(true);
+    toast({ title: "Thumbnail Approved ✓", description: "Locked. Proceeding to video generation." });
+    setTimeout(onApprove, 600);
+  };
+
+  const handleRefine = () => {
+    setRefineOpen(false);
+    setRefineText("");
+    generate();
+  };
+
+  if (state === "idle") {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-foreground mb-1">Thumbnail Generation</h3>
+          <p className="text-sm text-muted-foreground">Gemini Image AI creates 3 professional thumbnail variations for your content.</p>
+        </div>
+
+        <div className="glass rounded-xl p-8 text-center">
+          <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}>
+            <Image className="w-8 h-8 text-foreground" />
+          </div>
+          <h4 className="font-heading font-bold text-foreground text-lg mb-2">Generate with Gemini Image</h4>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto mb-5">
+            Three unique thumbnail styles for <span className="text-foreground font-medium">{form.toolName || "your tool"}</span>. Professional, high-contrast, optimized for YouTube (1280×720).
+          </p>
+
+          <div className="glass rounded-lg p-4 max-w-md mx-auto mb-6 text-left">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 font-semibold">Prompt Preview</p>
+            <p className="text-xs text-muted-foreground leading-relaxed font-mono">
+              YouTube thumbnail for <span className="text-primary">{form.toolName || "[Tool Name]"}</span>.
+              Professional, high contrast, tech modern. Colors: #1a73e8 blue, #00d084 green.
+              Include: Tool name, benefit, logo. 1280×720
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+            <Badge variant="outline" className="border-border text-xs">🖼️ 3 Variations</Badge>
+            <Badge variant="outline" className="border-border text-xs">📐 1280×720</Badge>
+            <Badge variant="outline" className="border-border text-xs">🎨 On-brand colors</Badge>
+          </div>
+
+          <Button
+            onClick={generate}
+            size="lg"
+            className="gap-2 font-semibold text-foreground px-8"
+            style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+          >
+            <Sparkles className="w-5 h-5" /> Generate Thumbnails
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (state === "loading") {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-foreground mb-1">Generating Thumbnails...</h3>
+          <p className="text-sm text-muted-foreground">Gemini Image is creating 3 unique variations. This takes 20-40 seconds.</p>
+        </div>
+        <div className="glass rounded-xl p-10 text-center">
+          <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} className="w-16 h-16 mx-auto mb-6">
+            <div className="w-full h-full rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}>
+              <Image className="w-8 h-8 text-foreground" />
+            </div>
+          </motion.div>
+          <div className="max-w-sm mx-auto mb-4">
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
+              <motion.div className="h-full rounded-full" style={{ background: "linear-gradient(90deg, hsl(214 84% 50%), hsl(155 100% 41%))", width: `${Math.min(progress, 100)}%` }} />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">{Math.round(Math.min(progress, 100))}% complete</p>
+          </div>
+          <div className="space-y-2 text-xs text-muted-foreground">
+            {progress > 10 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>🎨 Composing visual elements...</motion.p>}
+            {progress > 35 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>🖼️ Rendering Variation A...</motion.p>}
+            {progress > 55 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>🖼️ Rendering Variation B...</motion.p>}
+            {progress > 75 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>🖼️ Rendering Variation C...</motion.p>}
+            {progress > 90 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>✨ Optimizing quality...</motion.p>}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Done — show 3 variations
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-foreground mb-1">
+            {locked ? "🔒 Thumbnail Approved" : "🖼️ Select a Thumbnail"}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {locked ? "Thumbnail locked. Proceeding to video generation." : "Click to select your preferred variation. Hover to preview."}
+          </p>
+        </div>
+        <Badge className="bg-success/10 text-success border-0 text-xs font-semibold">3 Variations Generated ✓</Badge>
+      </div>
+
+      {/* Thumbnail Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {thumbnailVariations.map((thumb) => {
+          const isSelected = selected === thumb.id;
+          const isHovered = hoveredId === thumb.id;
+          return (
+            <motion.div
+              key={thumb.id}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              onHoverStart={() => setHoveredId(thumb.id)}
+              onHoverEnd={() => setHoveredId(null)}
+              onClick={() => !locked && setSelected(thumb.id)}
+              className={`glass rounded-xl overflow-hidden cursor-pointer transition-all duration-200 ${
+                isSelected ? "ring-2 ring-primary glow-primary" : "hover:ring-1 hover:ring-border"
+              } ${locked && !isSelected ? "opacity-40" : ""}`}
+            >
+              {/* Image */}
+              <div className="relative aspect-video overflow-hidden">
+                <img
+                  src={thumb.src}
+                  alt={thumb.label}
+                  className="w-full h-full object-cover transition-transform duration-300"
+                  style={{ transform: isHovered ? "scale(1.05)" : "scale(1)" }}
+                />
+                {isSelected && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center"
+                    style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+                  >
+                    <Check className="w-4 h-4 text-foreground" />
+                  </motion.div>
+                )}
+                {/* Expand preview button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPreviewSrc(thumb.src);
+                    setPreviewOpen(true);
+                  }}
+                  className="absolute bottom-3 right-3 w-7 h-7 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground transition-all opacity-0 group-hover:opacity-100"
+                  style={{ opacity: isHovered ? 1 : 0 }}
+                >
+                  <Search className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              {/* Info */}
+              <div className="p-3">
+                <p className="text-sm font-medium text-foreground">{thumb.label}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{thumb.style} • 1280×720</p>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Actions */}
+      {!locked && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            onClick={handleApprove}
+            disabled={selected === null}
+            className="gap-2 font-semibold text-foreground"
+            style={{ background: selected !== null ? "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" : undefined }}
+          >
+            <Lock className="w-4 h-4" /> Select & Continue
+          </Button>
+          <Button variant="outline" onClick={() => setRefineOpen(true)} className="gap-1.5 border-border text-foreground hover:bg-muted">
+            <MessageSquare className="w-4 h-4" /> Refine Prompt
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => toast({ title: "Canva Integration", description: "This would open the selected thumbnail in Canva for editing." })}
+            className="gap-1.5 border-border text-foreground hover:bg-muted"
+          >
+            <Edit3 className="w-4 h-4" /> Edit in Canva
+          </Button>
+          <Button variant="outline" onClick={generate} className="gap-1.5 border-border text-foreground hover:bg-muted">
+            <RefreshCw className="w-4 h-4" /> Regenerate All
+          </Button>
+        </div>
+      )}
+
+      {/* Full Preview Dialog */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="bg-card border-border max-w-3xl p-2">
+          <img src={previewSrc} alt="Thumbnail preview" className="w-full h-auto rounded-lg" />
+        </DialogContent>
+      </Dialog>
+
+      {/* Refine Dialog */}
+      <Dialog open={refineOpen} onOpenChange={setRefineOpen}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-foreground">Refine Thumbnails</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground mb-3">Describe the changes you'd like for the next batch of thumbnails.</p>
+          <Textarea
+            value={refineText}
+            onChange={(e) => setRefineText(e.target.value)}
+            placeholder="e.g., More vibrant colors, add person's face, bigger text, different layout..."
+            className="bg-muted border-border min-h-[100px]"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRefineOpen(false)} className="border-border text-foreground hover:bg-muted">Cancel</Button>
+            <Button
+              onClick={handleRefine}
+              disabled={!refineText.trim()}
+              className="gap-2 text-foreground font-semibold"
+              style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}
+            >
+              <RefreshCw className="w-4 h-4" /> Regenerate
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────
    Generic Step Placeholder
    ────────────────────────────────── */
 function StepPlaceholder({ stepIndex }: { stepIndex: number }) {
