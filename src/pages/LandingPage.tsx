@@ -171,23 +171,59 @@ const Hero = () => {
           ))}
         </motion.div>
 
-        {/* Animated flow preview */}
+        {/* Animated flow preview - all 10 steps visible */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.6 }}
-          className="glass rounded-2xl p-6 max-w-3xl mx-auto"
+          className="glass rounded-2xl p-8 max-w-5xl mx-auto"
         >
-          <div className="flex items-center justify-between gap-2 overflow-x-auto pb-2">
-            {["Input", "Script", "Audio", "Thumbnail", "Video", "SEO", "Social", "Review", "Publish", "Track"].map((step, i) => (
-              <div key={step} className="flex items-center gap-2 shrink-0">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold ${i < 5 ? "bg-primary/20 text-primary" : i < 8 ? "bg-secondary/20 text-secondary" : "bg-accent/20 text-accent"}`}>
-                  {String(i + 1).padStart(2, "0")}
+          <p className="text-xs text-muted-foreground text-center mb-6 uppercase tracking-widest font-semibold">Your Content Pipeline — 10 Steps, Full Control</p>
+          <div className="grid grid-cols-5 gap-y-6 gap-x-0 items-center">
+            {[
+              { label: "Input", icon: "🔗", desc: "Enter URL" },
+              { label: "Script", icon: "📝", desc: "AI generates" },
+              { label: "Audio", icon: "🎙️", desc: "TTS voices" },
+              { label: "Thumbnail", icon: "🎨", desc: "3 variations" },
+              { label: "Video", icon: "🎬", desc: "Kie.ai render" },
+              { label: "SEO", icon: "🔍", desc: "Optimize" },
+              { label: "Social", icon: "📱", desc: "Captions" },
+              { label: "Review", icon: "👁️", desc: "Preview all" },
+              { label: "Publish", icon: "🚀", desc: "Auto-post" },
+              { label: "Track", icon: "📊", desc: "Analytics" },
+            ].map((step, i) => (
+              <div key={step.label} className="flex items-center justify-center">
+                <div className="flex items-center gap-1">
+                  {/* Step card */}
+                  <div className="flex flex-col items-center gap-1.5 group">
+                    <div className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex flex-col items-center justify-center font-bold text-sm transition-transform group-hover:scale-110 ${
+                      i < 5 ? "bg-primary/20 text-primary border border-primary/30" : i < 8 ? "bg-secondary/20 text-secondary border border-secondary/30" : "bg-accent/20 text-accent border border-accent/30"
+                    }`}>
+                      <span className="text-base leading-none">{step.icon}</span>
+                      <span className="text-[10px] font-bold leading-none mt-0.5">{String(i + 1).padStart(2, "0")}</span>
+                    </div>
+                    <span className="text-xs font-semibold text-foreground">{step.label}</span>
+                    <span className="text-[10px] text-muted-foreground">{step.desc}</span>
+                    <div className="flex items-center gap-0.5 mt-0.5">
+                      <Check className="w-3 h-3 text-secondary" />
+                      <span className="text-[9px] text-secondary font-medium">Confirm</span>
+                    </div>
+                  </div>
+
+                  {/* Arrow between steps (not after last in row or last overall) */}
+                  {i !== 4 && i !== 9 && (
+                    <ArrowRight className={`w-4 h-4 mx-1 shrink-0 ${i < 5 ? "text-primary/50" : i < 8 ? "text-secondary/50" : "text-accent/50"}`} />
+                  )}
                 </div>
-                <span className="text-xs text-muted-foreground hidden lg:inline">{step}</span>
-                {i < 9 && <ChevronRight className="w-3 h-3 text-muted-foreground/50 hidden sm:inline" />}
               </div>
             ))}
+          </div>
+          <div className="mt-6 flex items-center justify-center gap-2">
+            <div className="flex items-center gap-4 text-[11px] text-muted-foreground">
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-primary/40" /> Steps 1-5: Creation</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-secondary/40" /> Steps 6-8: Optimization</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-accent/40" /> Steps 9-10: Distribution</span>
+            </div>
           </div>
         </motion.div>
 
