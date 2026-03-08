@@ -83,9 +83,14 @@ export const useStore = create<ProjectState>((set, get) => ({
   generateScript: async () => {
     set((s) => ({ assets: { ...s.assets, script: { ...s.assets.script, status: 'generating' } } }));
     try {
-      const { projectData } = get();
+      const { projectData, getActiveSpeakerNames } = get();
       if (!projectData) throw new Error('No project data');
-      const content = await geminiService.generateScript(projectData);
+      const speakers = getActiveSpeakerNames();
+      const content = await geminiService.generateScript({
+        ...projectData,
+        femaleSpeakerName: speakers.female,
+        maleSpeakerName: speakers.male,
+      });
       set((s) => ({ assets: { ...s.assets, script: { content, status: 'ready', approved: false } } }));
     } catch {
       set((s) => ({ assets: { ...s.assets, script: { ...s.assets.script, status: 'failed' } } }));
