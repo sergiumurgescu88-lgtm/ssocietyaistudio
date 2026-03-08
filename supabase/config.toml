@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.kie]
 verify_jwt = false
+
+[functions.botato]
+verify_jwt = false
