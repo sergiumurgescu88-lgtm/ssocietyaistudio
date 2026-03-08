@@ -4,7 +4,8 @@ import {
   LayoutDashboard, FileText, Mic2, Headphones, Image, Video,
   Search, Share2, CheckCircle2, Rocket, ArrowLeft, ArrowRight,
   Check, RefreshCw, Edit3, Sparkles, Globe, Tag, Users, Target,
-  HelpCircle, Copy, Lock, MessageSquare, Loader2, Clock, AlignLeft
+  HelpCircle, Copy, Lock, MessageSquare, Loader2, Clock, AlignLeft,
+  Play, Pause, Volume2, VolumeX, Upload, Settings2, SkipBack, SkipForward
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
