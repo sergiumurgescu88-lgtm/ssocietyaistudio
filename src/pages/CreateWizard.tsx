@@ -2307,12 +2307,10 @@ interface ReviewSection {
   summary: string;
 }
 
-function StepReview({ form, onBack }: { form: ToolFormData; onBack: (step: number) => void }) {
+function StepReview({ form, onBack, onPublish }: { form: ToolFormData; onBack: (step: number) => void; onPublish: () => void }) {
   const { toast } = useToast();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [autoEngagement, setAutoEngagement] = useState(true);
-  const [publishing, setPublishing] = useState(false);
-  const [publishProgress, setPublishProgress] = useState(0);
 
   const sections: ReviewSection[] = [
     { id: "script", label: "Script", icon: <FileText className="w-4 h-4" />, step: 2, status: "ready", summary: "11 dialogue lines • ~180s • Romanian • 2 speakers" },
@@ -2323,73 +2321,12 @@ function StepReview({ form, onBack }: { form: ToolFormData; onBack: (step: numbe
     { id: "platforms", label: "Platforms", icon: <Share2 className="w-4 h-4" />, step: 7, status: "ready", summary: "5 platforms connected • Staggered schedule" },
   ];
 
-  const handlePublish = () => {
-    setPublishing(true);
-    setPublishProgress(0);
-    const interval = setInterval(() => {
-      setPublishProgress((p) => {
-        if (p >= 100) {
-          clearInterval(interval);
-          toast({ title: "🚀 Published Successfully!", description: "Content is live across all platforms." });
-          return 100;
-        }
-        return p + Math.random() * 4 + 2;
-      });
-    }, 300);
-  };
+  const handlePublish = () => onPublish();
 
   const handleDraft = () => {
     toast({ title: "Draft Saved", description: "Your project has been saved as a draft. Resume anytime from the Projects page." });
   };
 
-  if (publishing) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h3 className="font-heading text-xl font-bold text-foreground mb-1">
-            {publishProgress >= 100 ? "🎉 Published!" : "🚀 Publishing..."}
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {publishProgress >= 100 ? "Your content is now live across all platforms." : "Distributing content to all connected platforms via Botato."}
-          </p>
-        </div>
-        <div className="glass rounded-xl p-10 text-center">
-          {publishProgress < 100 ? (
-            <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} className="w-16 h-16 mx-auto mb-6">
-              <div className="w-full h-full rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(214 84% 50%), hsl(155 100% 41%))" }}>
-                <Rocket className="w-8 h-8 text-foreground" />
-              </div>
-            </motion.div>
-          ) : (
-            <div className="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center bg-success/20">
-              <CheckCircle2 className="w-8 h-8 text-success" />
-            </div>
-          )}
-          <div className="max-w-sm mx-auto mb-4">
-            <div className="h-2 rounded-full bg-muted overflow-hidden">
-              <motion.div className="h-full rounded-full" style={{ background: "linear-gradient(90deg, hsl(214 84% 50%), hsl(155 100% 41%))", width: `${Math.min(publishProgress, 100)}%` }} />
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">{Math.round(Math.min(publishProgress, 100))}% complete</p>
-          </div>
-          <div className="space-y-2 text-xs text-muted-foreground">
-            {publishProgress > 10 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>📺 Uploading to YouTube...</motion.p>}
-            {publishProgress > 30 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>📘 Publishing to Facebook...</motion.p>}
-            {publishProgress > 50 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>📸 Posting to Instagram...</motion.p>}
-            {publishProgress > 65 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>🎵 Uploading to TikTok...</motion.p>}
-            {publishProgress > 80 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>📌 Pinning to Pinterest...</motion.p>}
-            {publishProgress > 92 && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}>🤖 Botato: Auto-engagement activated!</motion.p>}
-          </div>
-          {publishProgress >= 100 && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
-              <Button variant="outline" onClick={() => window.location.href = "/projects"} className="gap-2 border-border text-foreground hover:bg-muted">
-                <LayoutDashboard className="w-4 h-4" /> Go to Projects
-              </Button>
-            </motion.div>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-5">
