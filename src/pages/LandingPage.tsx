@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
 import {
   Mic, Video, Image, Music, FileText, Bot, BarChart3, Users, Shield,
-  ChevronRight, Check, X, Star, Play, Menu, XIcon, ArrowRight,
+  ChevronRight, Check, X, Star, Play, Menu, XIcon, ArrowRight, ArrowDown,
   Zap, Clock, Globe, Mail, Phone, MapPin, ChevronDown,
   Twitter, Linkedin, Youtube, Github, MessageCircle,
   Sparkles, Target, TrendingUp, Rocket
@@ -55,15 +55,15 @@ const Navigation = () => {
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-background/80 backdrop-blur-xl border-b border-border shadow-lg" : "bg-transparent"}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14 sm:h-16">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center font-bold text-primary-foreground text-lg font-['Montserrat']">S</div>
-          <span className="font-['Montserrat'] font-bold text-lg text-foreground">SSociety AI Studio</span>
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center font-bold text-primary-foreground text-base sm:text-lg font-['Montserrat']">S</div>
+          <span className="font-['Montserrat'] font-bold text-base sm:text-lg text-foreground">SSociety AI Studio</span>
         </div>
 
         <div className="hidden md:flex items-center gap-8">
           {links.map(l => (
-            <button key={l.id} onClick={() => scrollTo(l.id)} className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium story-link">
+            <button key={l.id} onClick={() => scrollTo(l.id)} className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
               {l.label}
             </button>
           ))}
@@ -76,21 +76,47 @@ const Navigation = () => {
           </Button>
         </div>
 
-        <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
+        <button className="md:hidden text-foreground p-1" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <XIcon className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
 
       {mobileOpen && (
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border px-4 pb-4 space-y-3">
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border px-4 pb-4 space-y-2">
           {links.map(l => (
-            <button key={l.id} onClick={() => scrollTo(l.id)} className="block w-full text-left text-muted-foreground hover:text-foreground py-2">{l.label}</button>
+            <button key={l.id} onClick={() => scrollTo(l.id)} className="block w-full text-left text-muted-foreground hover:text-foreground py-2.5 text-base">{l.label}</button>
           ))}
-          <Button onClick={() => navigate("/login")} className="w-full bg-gradient-to-r from-primary to-secondary text-primary-foreground">Get Started Free</Button>
+          <Button onClick={() => { setMobileOpen(false); navigate("/login"); }} className="w-full bg-gradient-to-r from-primary to-secondary text-primary-foreground mt-2">Get Started Free</Button>
         </motion.div>
       )}
     </nav>
   );
+};
+
+// ─── Pipeline step data ───
+const pipelineSteps = [
+  { label: "Input", icon: "🔗", desc: "Enter URL", phase: "creation" },
+  { label: "Script", icon: "📝", desc: "AI generates", phase: "creation" },
+  { label: "Audio", icon: "🎙️", desc: "TTS voices", phase: "creation" },
+  { label: "Thumbnail", icon: "🎨", desc: "3 variations", phase: "creation" },
+  { label: "Video", icon: "🎬", desc: "Kie.ai render", phase: "creation" },
+  { label: "SEO", icon: "🔍", desc: "Optimize", phase: "optimization" },
+  { label: "Social", icon: "📱", desc: "Captions", phase: "optimization" },
+  { label: "Review", icon: "👁️", desc: "Preview all", phase: "optimization" },
+  { label: "Publish", icon: "🚀", desc: "Auto-post", phase: "distribution" },
+  { label: "Track", icon: "📊", desc: "Analytics", phase: "distribution" },
+] as const;
+
+const getPhaseColor = (phase: string) => {
+  if (phase === "creation") return "bg-primary/20 text-primary border-primary/30";
+  if (phase === "optimization") return "bg-secondary/20 text-secondary border-secondary/30";
+  return "bg-accent/20 text-accent border-accent/30";
+};
+
+const getArrowColor = (phase: string) => {
+  if (phase === "creation") return "text-primary/50";
+  if (phase === "optimization") return "text-secondary/50";
+  return "text-accent/50";
 };
 
 // ─── 2. HERO ───
@@ -104,15 +130,15 @@ const Hero = () => {
   ];
 
   return (
-    <section className="relative pt-32 pb-20 px-4 overflow-hidden">
+    <section className="relative pt-24 sm:pt-32 lg:pt-36 pb-16 sm:pb-20 lg:pb-24 px-4 overflow-hidden">
       {/* Ambient orbs */}
-      <div className="absolute top-20 left-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-secondary/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-20 left-1/4 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-primary/10 rounded-full blur-[80px] sm:blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[250px] sm:w-[400px] h-[250px] sm:h-[400px] bg-secondary/10 rounded-full blur-[60px] sm:blur-[100px] pointer-events-none" />
 
       <div className="max-w-5xl mx-auto text-center relative z-10">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
-            <Rocket className="w-4 h-4" /> AI-Powered Content Factory
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs sm:text-sm font-medium mb-5 sm:mb-6">
+            <Rocket className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> AI-Powered Content Factory
           </div>
         </motion.div>
 
@@ -120,7 +146,7 @@ const Hero = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
-          className="text-4xl sm:text-5xl lg:text-7xl font-extrabold font-['Montserrat'] leading-tight mb-6"
+          className="text-3xl sm:text-5xl lg:text-7xl font-extrabold font-['Montserrat'] leading-[1.1] mb-4 sm:mb-6"
         >
           Create, Publish & Track{" "}
           <span className="gradient-text">Marketing Content</span>{" "}
@@ -131,7 +157,7 @@ const Hero = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10"
+          className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 sm:mb-10 px-2"
         >
           From idea to published across all platforms in 15 minutes. AI scripts, professional video, auto-posting — all in one studio.
         </motion.p>
@@ -140,19 +166,19 @@ const Hero = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto mb-8"
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto mb-6 sm:mb-8 px-2"
         >
           <Input
             value={email}
             onChange={e => setEmail(e.target.value)}
             placeholder="Enter your email"
             type="email"
-            className="h-12 bg-card border-border text-foreground placeholder:text-muted-foreground"
+            className="h-11 sm:h-12 bg-card border-border text-foreground placeholder:text-muted-foreground"
           />
           <Button
             onClick={() => navigate("/login")}
             size="lg"
-            className="w-full sm:w-auto bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold hover:opacity-90 h-12 px-8 whitespace-nowrap"
+            className="w-full sm:w-auto bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold hover:opacity-90 h-11 sm:h-12 px-6 sm:px-8 whitespace-nowrap"
           >
             Start Free <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
@@ -162,112 +188,126 @@ const Hero = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="flex flex-wrap justify-center gap-3 mb-12"
+          className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-10 sm:mb-12 px-2"
         >
           {badges.map(b => (
             <span key={b} className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
-              <Check className="w-4 h-4 text-secondary" /> {b}
+              <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-secondary" /> {b}
             </span>
           ))}
         </motion.div>
 
-        {/* Animated flow preview - all 10 steps visible */}
+        {/* ── Content Pipeline ── */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.6 }}
-          className="glass rounded-2xl p-8 max-w-5xl mx-auto"
+          className="glass rounded-2xl p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto"
         >
-          <p className="text-xs text-muted-foreground text-center mb-6 uppercase tracking-widest font-semibold">Your Content Pipeline — 10 Steps, Full Control</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground text-center mb-4 sm:mb-6 uppercase tracking-widest font-semibold">Your Content Pipeline — 10 Steps, Full Control</p>
           
-          {/* Row 1: Steps 1-5 */}
-          <div className="flex items-start justify-center gap-0">
-            {[
-              { label: "Input", icon: "🔗", desc: "Enter URL" },
-              { label: "Script", icon: "📝", desc: "AI generates" },
-              { label: "Audio", icon: "🎙️", desc: "TTS voices" },
-              { label: "Thumbnail", icon: "🎨", desc: "3 variations" },
-              { label: "Video", icon: "🎬", desc: "Kie.ai render" },
-            ].map((step, i) => (
-              <div key={step.label} className="flex items-center">
-                <div className="flex flex-col items-center gap-1 group w-16 sm:w-20">
-                  <div className="relative w-11 h-11 sm:w-14 sm:h-14 rounded-2xl flex flex-col items-center justify-center font-bold transition-transform group-hover:scale-110 bg-primary/20 text-primary border border-primary/30">
-                    <span className="text-sm sm:text-base leading-none">{step.icon}</span>
-                    <span className="text-[9px] sm:text-[10px] font-bold leading-none mt-0.5">{String(i + 1).padStart(2, "0")}</span>
+          {/* Desktop: 2 rows of 5 */}
+          <div className="hidden md:block">
+            {/* Row 1: Steps 1-5 */}
+            <div className="flex items-start justify-center">
+              {pipelineSteps.slice(0, 5).map((step, i) => (
+                <div key={step.label} className="flex items-center">
+                  <div className="flex flex-col items-center gap-1.5 group w-24 lg:w-28">
+                    <div className={`relative w-14 h-14 lg:w-16 lg:h-16 rounded-2xl flex flex-col items-center justify-center font-bold transition-transform group-hover:scale-110 border ${getPhaseColor(step.phase)}`}>
+                      <span className="text-lg lg:text-xl leading-none">{step.icon}</span>
+                      <span className="text-[10px] font-bold leading-none mt-0.5">{String(i + 1).padStart(2, "0")}</span>
+                    </div>
+                    <span className="text-xs lg:text-sm font-semibold text-foreground">{step.label}</span>
+                    <span className="text-[10px] lg:text-xs text-muted-foreground">{step.desc}</span>
+                    <div className="flex items-center gap-0.5">
+                      <Check className="w-3 h-3 text-secondary" />
+                      <span className="text-[9px] text-secondary font-medium">Confirm</span>
+                    </div>
                   </div>
-                  <span className="text-[10px] sm:text-xs font-semibold text-foreground">{step.label}</span>
-                  <span className="text-[9px] sm:text-[10px] text-muted-foreground leading-tight text-center">{step.desc}</span>
-                  <div className="flex items-center gap-0.5">
-                    <Check className="w-3 h-3 text-secondary" />
-                    <span className="text-[8px] sm:text-[9px] text-secondary font-medium">Confirm</span>
+                  {i < 4 && (
+                    <div className="mx-1 lg:mx-2 flex-shrink-0">
+                      <ArrowRight className={`w-6 h-6 lg:w-7 lg:h-7 ${getArrowColor(step.phase)}`} />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Row connector */}
+            <div className="flex justify-center my-3 lg:my-4">
+              <div className="flex items-center gap-2 text-muted-foreground/60">
+                <div className="w-16 lg:w-20 h-[2px] bg-gradient-to-r from-primary/40 to-secondary/40 rounded-full" />
+                <ChevronDown className="w-5 h-5 text-secondary/60 animate-bounce" />
+                <div className="w-16 lg:w-20 h-[2px] bg-gradient-to-r from-secondary/40 to-primary/40 rounded-full" />
+              </div>
+            </div>
+
+            {/* Row 2: Steps 6-10 */}
+            <div className="flex items-start justify-center">
+              {pipelineSteps.slice(5).map((step, i) => (
+                <div key={step.label} className="flex items-center">
+                  <div className="flex flex-col items-center gap-1.5 group w-24 lg:w-28">
+                    <div className={`relative w-14 h-14 lg:w-16 lg:h-16 rounded-2xl flex flex-col items-center justify-center font-bold transition-transform group-hover:scale-110 border ${getPhaseColor(step.phase)}`}>
+                      <span className="text-lg lg:text-xl leading-none">{step.icon}</span>
+                      <span className="text-[10px] font-bold leading-none mt-0.5">{String(i + 6).padStart(2, "0")}</span>
+                    </div>
+                    <span className="text-xs lg:text-sm font-semibold text-foreground">{step.label}</span>
+                    <span className="text-[10px] lg:text-xs text-muted-foreground">{step.desc}</span>
+                    <div className="flex items-center gap-0.5">
+                      <Check className="w-3 h-3 text-secondary" />
+                      <span className="text-[9px] text-secondary font-medium">Confirm</span>
+                    </div>
+                  </div>
+                  {i < 4 && (
+                    <div className="mx-1 lg:mx-2 flex-shrink-0">
+                      <ArrowRight className={`w-6 h-6 lg:w-7 lg:h-7 ${getArrowColor(step.phase)}`} />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Mobile: vertical list */}
+          <div className="md:hidden space-y-0">
+            {pipelineSteps.map((step, i) => (
+              <div key={step.label}>
+                <div className="flex items-center gap-3 px-2">
+                  <div className={`relative w-11 h-11 rounded-xl flex flex-col items-center justify-center font-bold border flex-shrink-0 ${getPhaseColor(step.phase)}`}>
+                    <span className="text-sm leading-none">{step.icon}</span>
+                    <span className="text-[8px] font-bold leading-none mt-0.5">{String(i + 1).padStart(2, "0")}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-foreground">{step.label}</span>
+                      <span className="text-[10px] text-muted-foreground">— {step.desc}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-0.5 flex-shrink-0">
+                    <Check className="w-3.5 h-3.5 text-secondary" />
+                    <span className="text-[10px] text-secondary font-medium">OK</span>
                   </div>
                 </div>
-                {i < 4 && (
-                  <div className="flex flex-col items-center mx-0.5 sm:mx-1">
-                    <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-primary/60" />
+                {i < 9 && (
+                  <div className="flex justify-start pl-[30px] py-1">
+                    <ArrowDown className={`w-4 h-4 ${getArrowColor(step.phase)}`} />
                   </div>
                 )}
               </div>
             ))}
           </div>
 
-          {/* Curved connection arrow row 1 → row 2 */}
-          <div className="flex justify-center my-3">
-            <div className="flex items-center gap-2 text-muted-foreground/60">
-              <div className="w-16 h-[2px] bg-gradient-to-r from-primary/40 to-secondary/40 rounded-full" />
-              <ChevronDown className="w-5 h-5 text-secondary/60 animate-bounce" />
-              <div className="w-16 h-[2px] bg-gradient-to-r from-secondary/40 to-primary/40 rounded-full" />
-            </div>
-          </div>
-
-          {/* Row 2: Steps 6-10 */}
-          <div className="flex items-start justify-center gap-0">
-            {[
-              { label: "SEO", icon: "🔍", desc: "Optimize" },
-              { label: "Social", icon: "📱", desc: "Captions" },
-              { label: "Review", icon: "👁️", desc: "Preview all" },
-              { label: "Publish", icon: "🚀", desc: "Auto-post" },
-              { label: "Track", icon: "📊", desc: "Analytics" },
-            ].map((step, i) => {
-              const globalIdx = i + 5;
-              const colorClass = globalIdx < 8 ? "bg-secondary/20 text-secondary border-secondary/30" : "bg-accent/20 text-accent border-accent/30";
-              const arrowColor = globalIdx < 8 ? "text-secondary/60" : "text-accent/60";
-              return (
-                <div key={step.label} className="flex items-center">
-                  <div className="flex flex-col items-center gap-1 group w-16 sm:w-20">
-                    <div className={`relative w-11 h-11 sm:w-14 sm:h-14 rounded-2xl flex flex-col items-center justify-center font-bold transition-transform group-hover:scale-110 border ${colorClass}`}>
-                      <span className="text-sm sm:text-base leading-none">{step.icon}</span>
-                      <span className="text-[9px] sm:text-[10px] font-bold leading-none mt-0.5">{String(globalIdx + 1).padStart(2, "0")}</span>
-                    </div>
-                    <span className="text-[10px] sm:text-xs font-semibold text-foreground">{step.label}</span>
-                    <span className="text-[9px] sm:text-[10px] text-muted-foreground leading-tight text-center">{step.desc}</span>
-                    <div className="flex items-center gap-0.5">
-                      <Check className="w-3 h-3 text-secondary" />
-                      <span className="text-[8px] sm:text-[9px] text-secondary font-medium">Confirm</span>
-                    </div>
-                  </div>
-                  {i < 4 && (
-                    <div className="flex flex-col items-center mx-0.5 sm:mx-1">
-                      <ArrowRight className={`w-5 h-5 sm:w-6 sm:h-6 ${arrowColor}`} />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-6 flex items-center justify-center gap-2">
-            <div className="flex items-center gap-4 text-[11px] text-muted-foreground">
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-primary/40" /> Steps 1-5: Creation</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-secondary/40" /> Steps 6-8: Optimization</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-accent/40" /> Steps 9-10: Distribution</span>
-            </div>
+          {/* Legend */}
+          <div className="mt-4 sm:mt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-[10px] sm:text-[11px] text-muted-foreground">
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-primary/40" /> 1-5: Creation</span>
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-secondary/40" /> 6-8: Optimization</span>
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-accent/40" /> 9-10: Distribution</span>
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} className="mt-8 flex items-center justify-center gap-1">
-          {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />)}
-          <span className="text-muted-foreground text-sm ml-2">4.9/5 from 500+ creators</span>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} className="mt-6 sm:mt-8 flex items-center justify-center gap-1">
+          {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 fill-yellow-400 text-yellow-400" />)}
+          <span className="text-muted-foreground text-xs sm:text-sm ml-2">4.9/5 from 500+ creators</span>
         </motion.div>
       </div>
     </section>
@@ -278,11 +318,11 @@ const Hero = () => {
 const TrustBadges = () => {
   const brands = ["Google Gemini", "Firebase", "Kie.ai", "Botato", "YouTube", "Meta", "TikTok", "LinkedIn"];
   return (
-    <section className="py-12 border-y border-border/50 overflow-hidden">
-      <p className="text-center text-muted-foreground text-sm mb-8">Powered by Industry-Leading AI & Automation</p>
+    <section className="py-8 sm:py-12 border-y border-border/50 overflow-hidden">
+      <p className="text-center text-muted-foreground text-xs sm:text-sm mb-6 sm:mb-8">Powered by Industry-Leading AI & Automation</p>
       <div className="flex animate-[scroll_20s_linear_infinite] whitespace-nowrap">
         {[...brands, ...brands].map((b, i) => (
-          <span key={i} className="inline-block mx-8 text-muted-foreground/50 hover:text-foreground transition-colors text-lg font-semibold font-['Montserrat'] cursor-default">{b}</span>
+          <span key={i} className="inline-block mx-4 sm:mx-8 text-muted-foreground/50 hover:text-foreground transition-colors text-sm sm:text-lg font-semibold font-['Montserrat'] cursor-default">{b}</span>
         ))}
       </div>
     </section>
@@ -299,37 +339,37 @@ const ProblemSolution = () => {
   ];
 
   return (
-    <section className="py-24 px-4">
+    <section className="py-16 sm:py-24 px-4">
       <div className="max-w-5xl mx-auto">
         <FadeIn>
-          <h2 className="text-3xl sm:text-4xl font-extrabold font-['Montserrat'] text-center mb-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-['Montserrat'] text-center mb-3 sm:mb-4">
             The Content Creation <span className="gradient-text">Problem</span>
           </h2>
-          <p className="text-center text-muted-foreground mb-16 max-w-xl mx-auto">See how SSociety transforms your workflow</p>
+          <p className="text-center text-muted-foreground mb-10 sm:mb-16 max-w-xl mx-auto text-sm sm:text-base">See how SSociety transforms your workflow</p>
         </FadeIn>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
           <FadeIn delay={0.1}>
-            <div className="glass rounded-2xl p-8 border-destructive/20">
-              <h3 className="text-destructive font-bold text-lg mb-6 flex items-center gap-2"><X className="w-5 h-5" /> BEFORE</h3>
-              <div className="space-y-4">
+            <div className="glass rounded-2xl p-5 sm:p-8 border-destructive/20">
+              <h3 className="text-destructive font-bold text-base sm:text-lg mb-4 sm:mb-6 flex items-center gap-2"><X className="w-5 h-5" /> BEFORE</h3>
+              <div className="space-y-3 sm:space-y-4">
                 {comparisons.map((c, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <X className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
-                    <span className="text-muted-foreground">{c.before}</span>
+                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-destructive shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground text-sm sm:text-base">{c.before}</span>
                   </div>
                 ))}
               </div>
             </div>
           </FadeIn>
           <FadeIn delay={0.2}>
-            <div className="glass rounded-2xl p-8 border-secondary/20 glow-success">
-              <h3 className="text-secondary font-bold text-lg mb-6 flex items-center gap-2"><Check className="w-5 h-5" /> AFTER</h3>
-              <div className="space-y-4">
+            <div className="glass rounded-2xl p-5 sm:p-8 border-secondary/20 glow-success">
+              <h3 className="text-secondary font-bold text-base sm:text-lg mb-4 sm:mb-6 flex items-center gap-2"><Check className="w-5 h-5" /> AFTER</h3>
+              <div className="space-y-3 sm:space-y-4">
                 {comparisons.map((c, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
-                    <span className="text-foreground">{c.after}</span>
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5 text-secondary shrink-0 mt-0.5" />
+                    <span className="text-foreground text-sm sm:text-base">{c.after}</span>
                   </div>
                 ))}
               </div>
@@ -355,23 +395,23 @@ const features = [
 ];
 
 const FeaturesGrid = () => (
-  <section id="features" className="py-24 px-4">
+  <section id="features" className="py-16 sm:py-24 px-4">
     <div className="max-w-6xl mx-auto">
       <FadeIn>
-        <h2 className="text-3xl sm:text-4xl font-extrabold font-['Montserrat'] text-center mb-4">
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-['Montserrat'] text-center mb-3 sm:mb-4">
           Everything You Need in <span className="gradient-text">One Platform</span>
         </h2>
-        <p className="text-center text-muted-foreground mb-16 max-w-xl mx-auto">25+ features designed to automate your entire content pipeline</p>
+        <p className="text-center text-muted-foreground mb-10 sm:mb-16 max-w-xl mx-auto text-sm sm:text-base">25+ features designed to automate your entire content pipeline</p>
       </FadeIn>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {features.map((f, i) => (
           <FadeIn key={f.title} delay={i * 0.05}>
-            <div className="glass rounded-2xl p-6 hover:scale-[1.03] transition-transform duration-300 group cursor-default h-full">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${f.color === "primary" ? "bg-primary/15 text-primary" : "bg-secondary/15 text-secondary"} group-hover:scale-110 transition-transform`}>
-                <f.icon className="w-6 h-6" />
+            <div className="glass rounded-2xl p-5 sm:p-6 hover:scale-[1.03] transition-transform duration-300 group cursor-default h-full">
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center mb-3 sm:mb-4 ${f.color === "primary" ? "bg-primary/15 text-primary" : "bg-secondary/15 text-secondary"} group-hover:scale-110 transition-transform`}>
+                <f.icon className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <h3 className="font-bold text-foreground mb-2 font-['Montserrat']">{f.title}</h3>
-              <p className="text-sm text-muted-foreground">{f.desc}</p>
+              <h3 className="font-bold text-foreground mb-1.5 sm:mb-2 font-['Montserrat'] text-sm sm:text-base">{f.title}</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">{f.desc}</p>
             </div>
           </FadeIn>
         ))}
@@ -381,7 +421,7 @@ const FeaturesGrid = () => (
 );
 
 // ─── 6. HOW IT WORKS ───
-const steps = [
+const howSteps = [
   { num: "01", label: "Input", desc: "Enter your product URL or description" },
   { num: "02", label: "Script", desc: "AI generates podcast-style script" },
   { num: "03", label: "Audio", desc: "Google TTS creates natural voiceover" },
@@ -395,29 +435,29 @@ const steps = [
 ];
 
 const HowItWorks = () => (
-  <section className="py-24 px-4 bg-card/30">
+  <section className="py-16 sm:py-24 px-4 bg-card/30">
     <div className="max-w-6xl mx-auto">
       <FadeIn>
-        <h2 className="text-3xl sm:text-4xl font-extrabold font-['Montserrat'] text-center mb-4">
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-['Montserrat'] text-center mb-3 sm:mb-4">
           From Idea to Published in <span className="gradient-text">10 Steps</span>
         </h2>
-        <p className="text-center text-muted-foreground mb-16">Average time: 15 minutes from start to published</p>
+        <p className="text-center text-muted-foreground mb-10 sm:mb-16 text-sm sm:text-base">Average time: 15 minutes from start to published</p>
       </FadeIn>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-        {steps.map((s, i) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+        {howSteps.map((s, i) => (
           <FadeIn key={s.num} delay={i * 0.05}>
-            <div className="glass rounded-xl p-4 text-center hover:glow-primary transition-all duration-300 group cursor-default">
-              <div className="text-2xl font-extrabold font-['Montserrat'] gradient-text mb-2">{s.num}</div>
-              <div className="font-semibold text-foreground text-sm mb-1">{s.label}</div>
-              <p className="text-xs text-muted-foreground">{s.desc}</p>
+            <div className="glass rounded-xl p-3 sm:p-4 text-center hover:glow-primary transition-all duration-300 group cursor-default">
+              <div className="text-xl sm:text-2xl font-extrabold font-['Montserrat'] gradient-text mb-1.5 sm:mb-2">{s.num}</div>
+              <div className="font-semibold text-foreground text-xs sm:text-sm mb-1">{s.label}</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">{s.desc}</p>
             </div>
           </FadeIn>
         ))}
       </div>
       <FadeIn delay={0.5}>
-        <div className="mt-10 flex items-center justify-center gap-2 text-muted-foreground">
-          <Clock className="w-5 h-5 text-secondary" />
-          <span className="text-sm">⏱️ Average time: <strong className="text-foreground">15 minutes</strong> from start to published</span>
+        <div className="mt-8 sm:mt-10 flex items-center justify-center gap-2 text-muted-foreground">
+          <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
+          <span className="text-xs sm:text-sm">⏱️ Average time: <strong className="text-foreground">15 minutes</strong> from start to published</span>
         </div>
       </FadeIn>
     </div>
@@ -428,29 +468,29 @@ const HowItWorks = () => (
 const LiveDemo = () => {
   const navigate = useNavigate();
   return (
-    <section className="py-24 px-4">
+    <section className="py-16 sm:py-24 px-4">
       <div className="max-w-4xl mx-auto text-center">
         <FadeIn>
-          <h2 className="text-3xl sm:text-4xl font-extrabold font-['Montserrat'] mb-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-['Montserrat'] mb-3 sm:mb-4">
             See It <span className="gradient-text">In Action</span>
           </h2>
-          <p className="text-muted-foreground mb-12">Watch how SSociety transforms a simple URL into a full marketing campaign</p>
+          <p className="text-muted-foreground mb-8 sm:mb-12 text-sm sm:text-base">Watch how SSociety transforms a simple URL into a full marketing campaign</p>
         </FadeIn>
 
         <FadeIn delay={0.2}>
-          <div className="glass rounded-2xl p-8 lg:p-12 relative overflow-hidden group cursor-pointer" onClick={() => navigate("/login")}>
+          <div className="glass rounded-2xl p-6 sm:p-8 lg:p-12 relative overflow-hidden group cursor-pointer" onClick={() => navigate("/login")}>
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5" />
             <div className="relative z-10">
-              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Play className="w-10 h-10 text-primary ml-1" />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 rounded-full bg-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Play className="w-8 h-8 sm:w-10 sm:h-10 text-primary ml-1" />
               </div>
-              <h3 className="font-bold text-xl text-foreground mb-2 font-['Montserrat']">Interactive Demo</h3>
-              <p className="text-muted-foreground mb-6">Enter a product URL → Watch AI generate a full campaign in real-time</p>
+              <h3 className="font-bold text-lg sm:text-xl text-foreground mb-2 font-['Montserrat']">Interactive Demo</h3>
+              <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base">Enter a product URL → Watch AI generate a full campaign in real-time</p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Button className="bg-gradient-to-r from-primary to-secondary text-primary-foreground">
+                <Button className="w-full sm:w-auto bg-gradient-to-r from-primary to-secondary text-primary-foreground">
                   Try Interactive Demo <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
-                <Button variant="outline" className="border-border text-muted-foreground hover:text-foreground">
+                <Button variant="outline" className="w-full sm:w-auto border-border text-muted-foreground hover:text-foreground">
                   <Play className="mr-2 w-4 h-4" /> Watch Video Tour (2 min)
                 </Button>
               </div>
@@ -494,36 +534,36 @@ const UseCases = () => {
   const [active, setActive] = useState(0);
   const uc = useCases[active];
   return (
-    <section id="usecases" className="py-24 px-4 bg-card/30">
+    <section id="usecases" className="py-16 sm:py-24 px-4 bg-card/30">
       <div className="max-w-5xl mx-auto">
         <FadeIn>
-          <h2 className="text-3xl sm:text-4xl font-extrabold font-['Montserrat'] text-center mb-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-['Montserrat'] text-center mb-3 sm:mb-4">
             Built for <span className="gradient-text">Every Industry</span>
           </h2>
-          <p className="text-center text-muted-foreground mb-12">See how teams like yours are using SSociety</p>
+          <p className="text-center text-muted-foreground mb-8 sm:mb-12 text-sm sm:text-base">See how teams like yours are using SSociety</p>
         </FadeIn>
 
-        <div className="flex flex-wrap justify-center gap-3 mb-10">
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8 sm:mb-10">
           {useCases.map((u, i) => (
             <button
               key={u.tab}
               onClick={() => setActive(i)}
-              className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${i === active ? "bg-primary text-primary-foreground" : "glass text-muted-foreground hover:text-foreground"}`}
+              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all ${i === active ? "bg-primary text-primary-foreground" : "glass text-muted-foreground hover:text-foreground"}`}
             >
               {u.tab}
             </button>
           ))}
         </div>
 
-        <motion.div key={active} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-2xl p-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center text-primary"><uc.icon className="w-5 h-5" /></div>
-            <h3 className="font-bold text-xl text-foreground font-['Montserrat']">{uc.title}</h3>
+        <motion.div key={active} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-2xl p-5 sm:p-8">
+          <div className="flex items-center gap-3 mb-3 sm:mb-4">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/15 flex items-center justify-center text-primary"><uc.icon className="w-4 h-4 sm:w-5 sm:h-5" /></div>
+            <h3 className="font-bold text-lg sm:text-xl text-foreground font-['Montserrat']">{uc.title}</h3>
           </div>
-          <p className="text-muted-foreground italic mb-6">"{uc.quote}"</p>
-          <div className="grid sm:grid-cols-2 gap-3">
+          <p className="text-muted-foreground italic mb-4 sm:mb-6 text-sm sm:text-base">"{uc.quote}"</p>
+          <div className="grid sm:grid-cols-2 gap-2.5 sm:gap-3">
             {uc.items.map(item => (
-              <div key={item} className="flex items-center gap-2 text-sm text-foreground">
+              <div key={item} className="flex items-center gap-2 text-xs sm:text-sm text-foreground">
                 <Check className="w-4 h-4 text-secondary shrink-0" /> {item}
               </div>
             ))}
@@ -558,43 +598,43 @@ const Pricing = () => {
   const [annual, setAnnual] = useState(false);
 
   return (
-    <section id="pricing" className="py-24 px-4">
+    <section id="pricing" className="py-16 sm:py-24 px-4">
       <div className="max-w-6xl mx-auto">
         <FadeIn>
-          <h2 className="text-3xl sm:text-4xl font-extrabold font-['Montserrat'] text-center mb-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-['Montserrat'] text-center mb-3 sm:mb-4">
             Simple, <span className="gradient-text">Transparent Pricing</span>
           </h2>
-          <p className="text-center text-muted-foreground mb-8">Start free, scale as you grow</p>
+          <p className="text-center text-muted-foreground mb-6 sm:mb-8 text-sm sm:text-base">Start free, scale as you grow</p>
         </FadeIn>
 
         <FadeIn delay={0.1}>
-          <div className="flex items-center justify-center gap-3 mb-12">
-            <span className={`text-sm ${!annual ? "text-foreground" : "text-muted-foreground"}`}>Monthly</span>
-            <button onClick={() => setAnnual(!annual)} className={`relative w-12 h-6 rounded-full transition-colors ${annual ? "bg-primary" : "bg-muted"}`}>
-              <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-foreground transition-transform ${annual ? "left-6" : "left-0.5"}`} />
+          <div className="flex items-center justify-center gap-3 mb-8 sm:mb-12">
+            <span className={`text-xs sm:text-sm ${!annual ? "text-foreground" : "text-muted-foreground"}`}>Monthly</span>
+            <button onClick={() => setAnnual(!annual)} className={`relative w-11 sm:w-12 h-6 rounded-full transition-colors ${annual ? "bg-primary" : "bg-muted"}`}>
+              <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-foreground transition-transform ${annual ? "left-[22px] sm:left-6" : "left-0.5"}`} />
             </button>
-            <span className={`text-sm ${annual ? "text-foreground" : "text-muted-foreground"}`}>Annual <span className="text-secondary text-xs font-semibold">Save 20%</span></span>
+            <span className={`text-xs sm:text-sm ${annual ? "text-foreground" : "text-muted-foreground"}`}>Annual <span className="text-secondary text-[10px] sm:text-xs font-semibold">Save 20%</span></span>
           </div>
         </FadeIn>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           {plans.map((plan, i) => (
             <FadeIn key={plan.name} delay={i * 0.1}>
-              <div className={`glass rounded-2xl p-8 relative h-full flex flex-col ${plan.highlight ? "ring-2 ring-primary glow-primary scale-[1.02]" : ""}`}>
+              <div className={`glass rounded-2xl p-5 sm:p-8 relative h-full flex flex-col ${plan.highlight ? "ring-2 ring-primary glow-primary md:scale-[1.02]" : ""}`}>
                 {plan.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold">Most Popular</div>
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold">Most Popular</div>
                 )}
-                <div className="text-2xl mb-2">{plan.icon}</div>
-                <h3 className="font-bold text-xl text-foreground font-['Montserrat'] mb-1">{plan.name}</h3>
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="text-4xl font-extrabold font-['Montserrat'] text-foreground">
+                <div className="text-xl sm:text-2xl mb-2">{plan.icon}</div>
+                <h3 className="font-bold text-lg sm:text-xl text-foreground font-['Montserrat'] mb-1">{plan.name}</h3>
+                <div className="flex items-baseline gap-1 mb-4 sm:mb-6">
+                  <span className="text-3xl sm:text-4xl font-extrabold font-['Montserrat'] text-foreground">
                     {annual ? `€${Math.round(parseInt(plan.price.replace("€", "")) * 0.8)}` : plan.price}
                   </span>
-                  <span className="text-muted-foreground text-sm">{plan.period}</span>
+                  <span className="text-muted-foreground text-xs sm:text-sm">{plan.period}</span>
                 </div>
-                <div className="space-y-3 mb-8 flex-1">
+                <div className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-8 flex-1">
                   {plan.features.map(f => (
-                    <div key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div key={f} className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
                       <Check className="w-4 h-4 text-secondary shrink-0" /> {f}
                     </div>
                   ))}
@@ -612,7 +652,7 @@ const Pricing = () => {
         </div>
 
         <FadeIn delay={0.4}>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
+          <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-secondary" /> 14-day free trial</span>
             <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-secondary" /> Cancel anytime</span>
             <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-secondary" /> No credit card required</span>
@@ -646,29 +686,29 @@ const testimonials = [
 ];
 
 const Testimonials = () => (
-  <section className="py-24 px-4 bg-card/30">
+  <section className="py-16 sm:py-24 px-4 bg-card/30">
     <div className="max-w-6xl mx-auto">
       <FadeIn>
-        <h2 className="text-3xl sm:text-4xl font-extrabold font-['Montserrat'] text-center mb-4">
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-['Montserrat'] text-center mb-3 sm:mb-4">
           Loved by <span className="gradient-text">500+ Creators</span>
         </h2>
-        <p className="text-center text-muted-foreground mb-16">See what content creators and marketing teams are saying</p>
+        <p className="text-center text-muted-foreground mb-10 sm:mb-16 text-sm sm:text-base">See what content creators and marketing teams are saying</p>
       </FadeIn>
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         {testimonials.map((t, i) => (
           <FadeIn key={t.name} delay={i * 0.1}>
-            <div className="glass rounded-2xl p-6 h-full flex flex-col">
-              <div className="flex gap-0.5 mb-4">
-                {[...Array(t.stars)].map((_, j) => <Star key={j} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
+            <div className="glass rounded-2xl p-5 sm:p-6 h-full flex flex-col">
+              <div className="flex gap-0.5 mb-3 sm:mb-4">
+                {[...Array(t.stars)].map((_, j) => <Star key={j} className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />)}
               </div>
-              <p className="text-foreground mb-6 flex-1 italic">"{t.quote}"</p>
+              <p className="text-foreground mb-4 sm:mb-6 flex-1 italic text-sm sm:text-base">"{t.quote}"</p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold text-sm">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold text-xs sm:text-sm">
                   {t.name.split(" ").map(n => n[0]).join("")}
                 </div>
                 <div>
-                  <div className="font-semibold text-sm text-foreground">{t.name}</div>
-                  <div className="text-xs text-muted-foreground">{t.role}</div>
+                  <div className="font-semibold text-xs sm:text-sm text-foreground">{t.name}</div>
+                  <div className="text-[10px] sm:text-xs text-muted-foreground">{t.role}</div>
                 </div>
               </div>
             </div>
@@ -691,20 +731,20 @@ const faqs = [
 ];
 
 const FAQ = () => (
-  <section id="faq" className="py-24 px-4">
+  <section id="faq" className="py-16 sm:py-24 px-4">
     <div className="max-w-3xl mx-auto">
       <FadeIn>
-        <h2 className="text-3xl sm:text-4xl font-extrabold font-['Montserrat'] text-center mb-4">
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-['Montserrat'] text-center mb-3 sm:mb-4">
           Frequently Asked <span className="gradient-text">Questions</span>
         </h2>
-        <p className="text-center text-muted-foreground mb-12">Everything you need to know to get started</p>
+        <p className="text-center text-muted-foreground mb-8 sm:mb-12 text-sm sm:text-base">Everything you need to know to get started</p>
       </FadeIn>
       <FadeIn delay={0.1}>
-        <Accordion type="single" collapsible className="space-y-3">
+        <Accordion type="single" collapsible className="space-y-2 sm:space-y-3">
           {faqs.map((faq, i) => (
-            <AccordionItem key={i} value={`faq-${i}`} className="glass rounded-xl border-none px-6">
-              <AccordionTrigger className="text-foreground font-medium text-left hover:no-underline py-5">{faq.q}</AccordionTrigger>
-              <AccordionContent className="text-muted-foreground pb-5">{faq.a}</AccordionContent>
+            <AccordionItem key={i} value={`faq-${i}`} className="glass rounded-xl border-none px-4 sm:px-6">
+              <AccordionTrigger className="text-foreground font-medium text-left hover:no-underline py-4 sm:py-5 text-sm sm:text-base">{faq.q}</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pb-4 sm:pb-5 text-xs sm:text-sm">{faq.a}</AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
@@ -717,21 +757,21 @@ const FAQ = () => (
 const FinalCTA = () => {
   const navigate = useNavigate();
   return (
-    <section className="py-24 px-4 relative overflow-hidden">
+    <section className="py-16 sm:py-24 px-4 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 pointer-events-none" />
       <div className="max-w-3xl mx-auto text-center relative z-10">
         <FadeIn>
-          <h2 className="text-3xl sm:text-4xl font-extrabold font-['Montserrat'] mb-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-['Montserrat'] mb-3 sm:mb-4">
             Ready to Transform Your <span className="gradient-text">Content?</span>
           </h2>
-          <p className="text-muted-foreground mb-10">Join 500+ creators automating their marketing with AI</p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto mb-8">
-            <Input placeholder="Enter your email" type="email" className="h-12 bg-card border-border text-foreground placeholder:text-muted-foreground" />
-            <Button onClick={() => navigate("/login")} size="lg" className="w-full sm:w-auto bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold h-12 px-8 whitespace-nowrap">
+          <p className="text-muted-foreground mb-8 sm:mb-10 text-sm sm:text-base">Join 500+ creators automating their marketing with AI</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto mb-6 sm:mb-8 px-2">
+            <Input placeholder="Enter your email" type="email" className="h-11 sm:h-12 bg-card border-border text-foreground placeholder:text-muted-foreground" />
+            <Button onClick={() => navigate("/login")} size="lg" className="w-full sm:w-auto bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold h-11 sm:h-12 px-6 sm:px-8 whitespace-nowrap">
               Start Free Trial <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-secondary" /> No credit card required</span>
             <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-secondary" /> Cancel anytime</span>
             <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-secondary" /> 24/7 support</span>
@@ -744,19 +784,19 @@ const FinalCTA = () => {
 
 // ─── 13. FOOTER ───
 const Footer = () => (
-  <footer className="border-t border-border py-16 px-4">
+  <footer className="border-t border-border py-10 sm:py-16 px-4">
     <div className="max-w-6xl mx-auto">
-      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
-        <div className="lg:col-span-2">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center font-bold text-primary-foreground text-lg font-['Montserrat']">S</div>
-            <span className="font-['Montserrat'] font-bold text-lg text-foreground">SSociety AI Studio</span>
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-10 mb-8 sm:mb-12">
+        <div className="col-span-2">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center font-bold text-primary-foreground text-base sm:text-lg font-['Montserrat']">S</div>
+            <span className="font-['Montserrat'] font-bold text-base sm:text-lg text-foreground">SSociety AI Studio</span>
           </div>
-          <p className="text-muted-foreground text-sm mb-4 max-w-xs">Automate Your Content. Scale Your Business. The complete AI content factory.</p>
-          <div className="flex items-center gap-3">
+          <p className="text-muted-foreground text-xs sm:text-sm mb-4 max-w-xs">Automate Your Content. Scale Your Business. The complete AI content factory.</p>
+          <div className="flex items-center gap-2 sm:gap-3">
             {[Twitter, Linkedin, Youtube, Github, MessageCircle].map((Icon, i) => (
-              <a key={i} href="#" className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-colors">
-                <Icon className="w-4 h-4" />
+              <a key={i} href="#" className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-colors">
+                <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </a>
             ))}
           </div>
@@ -768,41 +808,41 @@ const Footer = () => (
           { title: "Resources", links: ["Blog", "Help Center", "API Docs", "Community"] },
         ].map(col => (
           <div key={col.title}>
-            <h4 className="font-semibold text-foreground mb-4 text-sm">{col.title}</h4>
-            <ul className="space-y-2.5">
+            <h4 className="font-semibold text-foreground mb-3 sm:mb-4 text-xs sm:text-sm">{col.title}</h4>
+            <ul className="space-y-2 sm:space-y-2.5">
               {col.links.map(link => (
-                <li key={link}><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{link}</a></li>
+                <li key={link}><a href="#" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors">{link}</a></li>
               ))}
             </ul>
           </div>
         ))}
       </div>
 
-      <div className="border-t border-border pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+      <div className="border-t border-border pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-4 text-[10px] sm:text-xs text-muted-foreground">
           <span>© {new Date().getFullYear()} SSociety AI Studio. All rights reserved.</span>
           <a href="#" className="hover:text-foreground">Terms</a>
           <a href="#" className="hover:text-foreground">Privacy</a>
           <a href="#" className="hover:text-foreground">GDPR</a>
         </div>
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+        <div className="flex items-center gap-3 sm:gap-4 text-[10px] sm:text-xs text-muted-foreground">
           <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> sergiusociety@gmail.com</span>
           <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> +40 768 676 141</span>
         </div>
       </div>
 
-      <div className="border-t border-border mt-8 pt-6 text-center space-y-2">
-        <p className="text-xs text-muted-foreground">
+      <div className="border-t border-border mt-6 sm:mt-8 pt-4 sm:pt-6 text-center space-y-1.5 sm:space-y-2">
+        <p className="text-[10px] sm:text-xs text-muted-foreground">
           Powered by{" "}
           <a href="https://ssociety.eu" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-foreground transition-colors font-medium">ssociety.eu</a>
           {" "}· SSocietyHUB
         </p>
-        <div className="text-[11px] text-muted-foreground/70 space-y-0.5">
+        <div className="text-[10px] sm:text-[11px] text-muted-foreground/70 space-y-0.5">
           <p className="font-medium text-muted-foreground/80">MURSE ADVERTISING S.R.L.</p>
           <p>CUI: 44923890 · J40/16148/2021 · EUID: ROONRC.J40/16148/2021</p>
           <p>Înființată: 17.09.2021</p>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">Made with ❤️ in Romania</p>
+        <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 sm:mt-2">Made with ❤️ in Romania</p>
       </div>
     </div>
   </footer>
