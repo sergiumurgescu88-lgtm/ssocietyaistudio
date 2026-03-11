@@ -212,6 +212,7 @@ export default function Login() {
             Continuă cu Google
           </motion.button>
 
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} className="mt-4 text-sm text-muted-foreground">
             {isSignUp ? "Ai deja cont?" : "Nu ai cont?"}{" "}
             <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary hover:underline font-medium">
               {isSignUp ? "Autentifică-te" : "Creează cont"}
