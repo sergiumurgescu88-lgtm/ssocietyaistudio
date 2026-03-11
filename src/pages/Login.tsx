@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { firebaseService } from "@/services/firebase";
+import { lovable } from "@/integrations/lovable/index";
 
 const features = [
   { icon: Sparkles, label: "AI Intelligence", desc: "Powered by Gemini 2.5 Pro" },
